@@ -1,0 +1,1097 @@
+<!DOCTYPE html>
+<html lang="ru" data-bs-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Find&Go – Найди компанию в Бишкеке</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" type="text/css" href="https://npmcdn.com/flatpickr/dist/themes/airbnb.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bs-body-bg); transition: background-color 0.3s ease; overflow-x: hidden; }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+        .hero { animation: fadeInUp 0.8s ease-out; }
+        .hero-content { animation: fadeInUp 0.6s ease-out 0.2s both; }
+        .info-section, .category-cards, .category-filters, .section-header, .events-grid { opacity: 0; transform: translateY(30px); transition: opacity 0.6s ease, transform 0.6s ease; }
+        .info-section.visible, .category-cards.visible, .category-filters.visible, .section-header.visible, .events-grid.visible { opacity: 1; transform: translateY(0); }
+        .category-cards .category-card { opacity: 0; transform: translateY(20px); transition: opacity 0.4s ease, transform 0.4s ease; }
+        .category-cards.visible .category-card { opacity: 1; transform: translateY(0); }
+        .category-cards.visible .category-card:nth-child(1) { transition-delay: 0.1s; }
+        .category-cards.visible .category-card:nth-child(2) { transition-delay: 0.2s; }
+        .category-cards.visible .category-card:nth-child(3) { transition-delay: 0.3s; }
+        .category-cards.visible .category-card:nth-child(4) { transition-delay: 0.4s; }
+        .category-cards.visible .category-card:nth-child(5) { transition-delay: 0.5s; }
+        .place-card { transition: transform 0.3s ease, box-shadow 0.3s ease; }
+        .place-card:hover { transform: translateY(-8px) scale(1.02); box-shadow: 0 20px 30px rgba(0,0,0,0.15); }
+        .category-card { transition: all 0.3s ease; }
+        .category-card:hover { animation: pulse 0.4s ease; transform: translateY(-5px); border-color: #667eea; }
+        .event-card { transition: transform 0.2s ease, border-color 0.2s ease; }
+        .event-card:hover { transform: translateX(5px); border-color: #667eea; }
+        .hero { transition: background-position 0.1s ease; }
+        .navbar { background: var(--bs-tertiary-bg); backdrop-filter: blur(20px); padding: 12px 0; }
+        [data-bs-theme="dark"] .navbar { background: rgba(33, 37, 41, 0.95); }
+        .navbar-brand { font-weight: 700; font-size: 1.6rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+        .btn-menu { background: none; border: none; font-size: 1.8rem; color: #667eea; }
+        .btn-logout { border: 1px solid var(--bs-border-color); background: var(--bs-secondary-bg); border-radius: 30px; padding: 6px 18px; transition: 0.2s; color: var(--bs-body-color); }
+        .btn-logout:hover { background: #fee2e2; border-color: #fecaca; color: #dc2626; }
+        .search-container { max-width: 400px; width: 100%; }
+        .search-wrapper { position: relative; }
+        .search-input { background: var(--bs-secondary-bg); border: none; border-radius: 50px; padding: 8px 16px 8px 40px; width: 100%; }
+        .search-input:focus { outline: none; box-shadow: 0 0 0 2px #667eea; }
+        .search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--bs-secondary-color); }
+        .category-filters { display: flex; gap: 12px; flex-wrap: wrap; padding: 16px; justify-content: center; border-bottom: 1px solid var(--bs-border-color); margin-bottom: 20px; }
+        .filter-btn { background: var(--bs-secondary-bg); border: none; border-radius: 50px; padding: 8px 20px; font-weight: 500; transition: 0.2s; color: var(--bs-body-color); }
+        .filter-btn.active { background: linear-gradient(135deg, #667eea, #764ba2); color: white; }
+        .filter-btn:hover { transform: translateY(-2px); }
+        .hero { background: linear-gradient(135deg, #667eea, #764ba2, #f093fb); margin: 80px 16px 32px; border-radius: 32px; padding: 48px 24px; color: white; position: relative; overflow: hidden; }
+        .hero::before { content: ''; position: absolute; inset: 0; background: url('https://images.unsplash.com/photo-1582510003544-4d00b7f74220?w=1950') center/cover; opacity: 0.2; pointer-events: none; transition: transform 0.1s ease; }
+        .hero-content { position: relative; z-index: 2; text-align: center; }
+        .hero h1 { font-size: 2.8rem; font-weight: 800; margin-bottom: 16px; }
+        .hero .btn-light { background: white; color: #667eea; border-radius: 50px; padding: 12px 32px; font-weight: 600; border: none; }
+        .info-section { padding: 60px 20px; text-align: center; }
+        .step-card, .feature-card, .review-card { background: var(--bs-card-bg); border-radius: 24px; padding: 24px; height: 100%; border: 1px solid var(--bs-border-color); transition: 0.3s; }
+        .step-card:hover, .feature-card:hover, .review-card:hover { transform: translateY(-5px); border-color: #667eea; }
+        .step-icon { width: 70px; height: 70px; background: linear-gradient(135deg, #667eea, #764ba2); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; font-size: 2rem; color: white; }
+        .feature-icon { font-size: 2.5rem; color: #667eea; margin-bottom: 16px; }
+        .review-avatar { width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, #667eea, #764ba2); display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; font-size: 1.5rem; color: white; }
+        .cta-section { background: linear-gradient(135deg, #667eea, #764ba2); margin: 40px 16px; border-radius: 32px; padding: 60px 24px; text-align: center; color: white; }
+        .cta-section .btn-light { border-radius: 50px; padding: 12px 32px; font-weight: 600; }
+        .category-cards { display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; margin: 40px 0; }
+        .category-card { cursor: pointer; transition: all 0.3s ease; background: var(--bs-card-bg); border-radius: 1rem; border: 1px solid var(--bs-border-color); padding: 20px; text-align: center; width: 150px; }
+        .category-card i { font-size: 2.5rem; color: #667eea; }
+        .section-header { display: flex; justify-content: space-between; align-items: baseline; padding: 0 16px; margin: 32px 0 20px; }
+        .section-title { font-size: 1.8rem; font-weight: 700; color: var(--bs-heading-color); display: flex; align-items: center; gap: 10px; }
+        .places-scroll { display: flex; overflow-x: auto; gap: 18px; padding: 8px 16px 24px; scroll-behavior: smooth; }
+        .places-scroll::-webkit-scrollbar { height: 4px; }
+        .places-scroll::-webkit-scrollbar-track { background: var(--bs-secondary-bg); border-radius: 10px; }
+        .places-scroll::-webkit-scrollbar-thumb { background: #667eea; border-radius: 10px; }
+        .place-card { flex: 0 0 280px; background: var(--bs-card-bg); border-radius: 24px; overflow: hidden; cursor: pointer; box-shadow: 0 8px 20px rgba(0,0,0,0.08); border: 1px solid var(--bs-border-color); }
+        .place-card .card-body { padding: 16px; }
+        .place-card .place-tag { display: inline-block; background: var(--bs-secondary-bg); padding: 4px 12px; border-radius: 20px; font-size: 0.7rem; font-weight: 600; margin-bottom: 10px; }
+        .place-card h4 { font-size: 1.2rem; font-weight: 700; margin-bottom: 8px; }
+        .place-card p { font-size: 0.85rem; color: var(--bs-secondary-color); }
+        .events-grid { padding: 0 16px; }
+        .event-card { background: var(--bs-card-bg); border-radius: 20px; padding: 18px 20px; margin-bottom: 14px; border: 1px solid var(--bs-border-color); transition: 0.2s; }
+        .event-card:hover { border-color: #667eea; }
+        .event-title { font-weight: 700; font-size: 1.1rem; margin-bottom: 6px; }
+        .event-meta { font-size: 0.85rem; color: var(--bs-secondary-color); }
+        .btn-join { background: linear-gradient(135deg, #667eea, #764ba2); border: none; border-radius: 30px; padding: 8px 22px; color: white; }
+        .offcanvas-header { background: linear-gradient(135deg, #667eea, #764ba2); color: white; }
+        .offcanvas-body .nav-link { padding: 12px 16px; color: var(--bs-body-color); font-weight: 500; }
+        .offcanvas-body .nav-link:hover { background: var(--bs-secondary-bg); border-radius: 12px; }
+        .offcanvas-body .nav-link i { margin-right: 12px; width: 24px; }
+        .theme-switch { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; }
+        .form-check-input:checked { background-color: #667eea; border-color: #667eea; }
+        @media (max-width: 768px) { .search-container { max-width: 200px; } .hero h1 { font-size: 1.8rem; } .place-card { flex: 0 0 240px; } .filter-btn { padding: 6px 14px; font-size: 0.8rem; } .category-card { width: 120px; padding: 12px; } }
+        @media (max-width: 576px) { .search-container { display: none; } }
+        .modal-two-cards { display: flex; gap: 24px; flex-wrap: wrap; }
+        .modal-card { flex: 1; background: var(--bs-card-bg); border-radius: 28px; padding: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); transition: transform 0.2s ease, box-shadow 0.2s ease; border: 1px solid var(--bs-border-color); }
+        .modal-card:hover { transform: translateY(-4px); box-shadow: 0 20px 40px rgba(0,0,0,0.12); }
+        @media (max-width: 768px) { .modal-two-cards { flex-direction: column; } }
+        .place-detail-img { width: 100%; height: 180px; object-fit: cover; border-radius: 20px; margin-bottom: 16px; background: var(--bs-secondary-bg); display: flex; align-items: center; justify-content: center; font-size: 3rem; color: #667eea; }
+        .user-item-compact { display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; margin-bottom: 8px; background: var(--bs-secondary-bg); border-radius: 60px; transition: all 0.2s ease; cursor: pointer; }
+        .user-item-compact:hover { background: var(--bs-border-color); transform: translateX(4px); }
+        .user-avatar-small { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; margin-right: 12px; }
+        .user-info-compact { flex: 1; display: flex; align-items: center; gap: 12px; }
+        .user-name-compact { font-weight: 600; font-size: 0.95rem; margin: 0; }
+        .invite-btn-small { background: linear-gradient(135deg, #667eea, #764ba2); border: none; border-radius: 40px; padding: 6px 16px; color: white; font-size: 0.75rem; font-weight: 500; transition: 0.2s; white-space: nowrap; }
+        .invite-btn-small:disabled { opacity: 0.5; cursor: not-allowed; }
+        .faq-accordion-item { background: var(--bs-card-bg); border-radius: 20px; margin-bottom: 12px; border: 1px solid var(--bs-border-color); }
+        .faq-accordion-question { padding: 18px 20px; font-weight: 600; font-size: 1rem; cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: 0.2s; border-radius: 20px; }
+        .faq-accordion-question:hover { background: var(--bs-secondary-bg); }
+        .faq-accordion-answer { padding: 0 20px 18px 20px; color: var(--bs-secondary-color); line-height: 1.5; display: none; }
+        .faq-accordion-answer.show { display: block; }
+        .faq-accordion-question i { transition: transform 0.2s; }
+        .faq-accordion-question.active i { transform: rotate(180deg); }
+        .onboarding-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 10000; display: none; align-items: center; justify-content: center; }
+        .onboarding-card { background: white; border-radius: 32px; padding: 28px; max-width: 400px; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.3); }
+        [data-bs-theme="dark"] .onboarding-card { background: #1e1e2a; color: white; }
+        .onboarding-card h4 { margin-bottom: 16px; }
+        .onboarding-card p { margin-bottom: 24px; color: #6c757d; }
+        .onboarding-step-buttons { display: flex; justify-content: space-between; gap: 12px; }
+        .onboarding-step-buttons button { flex: 1; }
+        .modal-content { background-color: var(--bs-modal-bg); color: var(--bs-body-color); }
+    </style>
+</head>
+<body>
+
+<!-- Боковое меню -->
+<div class="offcanvas offcanvas-start" tabindex="-1" id="sidebarMenu">
+    <div class="offcanvas-header">
+        <h5 class="offcanvas-title"><i class="bi bi-compass-fill"></i> Find&Go</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"></button>
+    </div>
+    <div class="offcanvas-body">
+        <ul class="nav flex-column">
+            <li class="nav-item"><a class="nav-link" href="#heroSection"><i class="bi bi-house-door"></i> Главная</a></li>
+            <li class="nav-item"><a class="nav-link" href="#howItWorksSection"><i class="bi bi-info-circle"></i> Как это работает</a></li>
+            <li class="nav-item"><a class="nav-link" href="/create-event.html"><i class="bi bi-plus-circle"></i> Создать поход</a></li>
+            <li class="nav-item"><a class="nav-link" href="/profile.html"><i class="bi bi-person"></i> Профиль</a></li>
+            <li class="nav-item"><a class="nav-link" href="/faq.html"><i class="bi bi-question-circle"></i> Главные вопросы</a></li>
+            <li class="nav-item"><a class="nav-link" href="#" onclick="loadInvitesModal(); return false;"><i class="bi bi-envelope-paper"></i> Приглашения <span id="sidebarInvitesBadge" class="badge bg-danger ms-1" style="display:none;"></span></a></li>
+            <!-- ✅ БАГ 7: Чаты в бургер-меню -->
+            <li class="nav-item"><a class="nav-link" href="/chats.html"><i class="bi bi-chat-dots"></i> Мои чаты</a></li>
+            <li class="nav-item"><a class="nav-link" href="/icebreakers.html"><i class="bi bi-snow2"></i> Ледоколы</a></li>
+            <hr>
+            <li class="nav-item"><div class="theme-switch"><span><i class="bi bi-moon-stars"></i> Тёмная тема</span><div class="form-check form-switch"><input class="form-check-input" type="checkbox" id="darkModeSwitch"></div></div></li>
+            <li class="nav-item"><div class="d-flex justify-content-between align-items-center px-3 py-2"><span><i class="bi bi-translate"></i> Язык</span><div><button class="btn btn-sm btn-outline-primary me-1" onclick="switchLanguage('ru')">Рус</button><button class="btn btn-sm btn-outline-primary" onclick="switchLanguage('ky')">Кыр</button></div></div></li>
+        </ul>
+    </div>
+</div>
+
+<!-- Навбар -->
+<nav class="navbar navbar-expand-lg fixed-top">
+    <div class="container">
+        <button class="btn-menu me-2" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebarMenu">
+            <i class="bi bi-list"></i>
+        </button>
+        <a class="navbar-brand" href="/"><i class="bi bi-compass-fill"></i> Find&Go</a>
+        <div class="search-container ms-auto me-3">
+            <div class="search-wrapper">
+                <i class="bi bi-search search-icon"></i>
+                <input type="text" id="searchInput" class="search-input" placeholder="Поиск мест...">
+            </div>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <!-- ✅ БАГ 4/5: Колокольчик с бейджем -->
+            <div class="position-relative">
+                <button id="notificationsBtn" class="btn btn-link position-relative" style="color: var(--bs-body-color);">
+                    <i class="bi bi-bell fs-5"></i>
+                    <span id="notificationsBadge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="display: none;font-size:0.65rem;">0</span>
+                </button>
+            </div>
+            <!-- ✅ БАГ 4: Конверт с бейджем -->
+            <div class="position-relative">
+                <button class="btn btn-link" onclick="loadInvitesModal()" style="color: var(--bs-body-color);">
+                    <i class="bi bi-envelope-paper fs-5"></i>
+                    <span id="invitesBadge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="display: none;font-size:0.65rem;">0</span>
+                </button>
+            </div>
+            <a href="/create-event.html" class="btn btn-sm btn-success">
+                <i class="bi bi-plus-circle"></i> Создать поход
+            </a>
+            <div id="userProfileLink" style="cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                <img id="headerAvatar" src="https://api.dicebear.com/7.x/avataaars/svg?seed=default" width="32" height="32" class="rounded-circle" style="object-fit: cover;">
+                <span id="userName" class="fw-bold" style="color: var(--bs-body-color);"></span>
+            </div>
+            <button id="logoutBtn" class="btn btn-logout">Выйти</button>
+        </div>
+    </div>
+</nav>
+
+<div class="hero" id="heroSection">
+    <div class="hero-content">
+        <h1 id="heroTitle">С кем пойти?</h1>
+        <p id="heroSubtitle">Находи компанию для квестов, кафе, прогулок и новых знакомств в Бишкеке</p>
+        <a href="/create-event.html" class="btn btn-light btn-lg"><i class="bi bi-plus-circle"></i> <span id="createBtnText">Создать компанию</span></a>
+    </div>
+</div>
+
+<div id="welcomeBanner" class="container mt-4" style="display: none;">
+    <div class="alert alert-info text-center position-relative">
+        <button type="button" class="btn-close position-absolute top-0 end-0 m-2" onclick="closeWelcomeBanner()"></button>
+        <i class="bi bi-emoji-smile fs-1"></i>
+        <h4>Добро пожаловать в Find&Go!</h4>
+        <p>Создайте свой первый поход и найдите компанию для активного отдыха.</p>
+        <a href="/create-event.html" class="btn btn-primary btn-lg">🚀 Создать первый поход</a>
+        <hr class="my-3">
+        <div class="row mt-3">
+            <div class="col-md-4"><i class="bi bi-geo-alt"></i> 1. Выбери место</div>
+            <div class="col-md-4"><i class="bi bi-calendar-event"></i> 2. Укажи время</div>
+            <div class="col-md-4"><i class="bi bi-people"></i> 3. Пригласи друзей</div>
+        </div>
+    </div>
+</div>
+
+<div class="container" id="howItWorksSection">
+    <div class="info-section">
+        <h2 class="mb-5" id="howItWorksTitle">Как это работает</h2>
+        <div class="row g-4">
+            <div class="col-md-4"><div class="step-card"><div class="step-icon">1</div><h5 id="step1Title">Выбери место</h5><p class="text-muted">Листай карточки с интересными местами Бишкека или создай свой поход</p></div></div>
+            <div class="col-md-4"><div class="step-card"><div class="step-icon">2</div><h5 id="step2Title">Найди компанию</h5><p class="text-muted">Присоединись к существующему походу или собери свою команду</p></div></div>
+            <div class="col-md-4"><div class="step-card"><div class="step-icon">3</div><h5 id="step3Title">Иди и знакомься</h5><p class="text-muted">Встречайся, общайся в чате и наслаждайся новыми знакомствами</p></div></div>
+        </div>
+    </div>
+</div>
+
+<div class="container"><div class="info-section pt-0"><h2 class="mb-5">Почему выбирают нас</h2><div class="row g-4"><div class="col-md-4"><div class="feature-card"><div class="feature-icon"><i class="bi bi-lightning-charge"></i></div><h5>Быстро</h5><p class="text-muted">Минимум кликов — максимум пользы. Найди компанию за пару минут</p></div></div><div class="col-md-4"><div class="feature-card"><div class="feature-icon"><i class="bi bi-shield-check"></i></div><h5>Безопасно</h5><p class="text-muted">Рейтинг пользователей и отзывы помогают чувствовать себя уверенно</p></div></div><div class="col-md-4"><div class="feature-card"><div class="feature-icon"><i class="bi bi-geo-alt"></i></div><h5>Локально</h5><p class="text-muted">Только Бишкек — лучшие места города в одном сервисе</p></div></div></div></div></div>
+
+<div class="container"><div class="info-section pt-0"><h2 class="mb-5">Что говорят пользователи</h2><div class="row g-4"><div class="col-md-4"><div class="review-card"><div class="review-avatar"><i class="bi bi-person-fill"></i></div><h6>Айжан</h6><p class="text-muted small">"Нашла компанию на квест за 10 минут! Очень удобно, теперь постоянно здесь ищу с кем пойти"</p><div class="text-warning">★★★★★</div></div></div><div class="col-md-4"><div class="review-card"><div class="review-avatar"><i class="bi bi-person-fill"></i></div><h6>Эрмек</h6><p class="text-muted small">"Переехал в Бишкек недавно, не знал с кем гулять. Find&Go реально помог найти друзей"</p><div class="text-warning">★★★★★</div></div></div><div class="col-md-4"><div class="review-card"><div class="review-avatar"><i class="bi bi-person-fill"></i></div><h6>Данияр</h6><p class="text-muted small">"Отличная идея и крутой дизайн. Особенно нравится тёмная тема и перевод на кыргызский"</p><div class="text-warning">★★★★★</div></div></div></div></div></div>
+
+<div class="container">
+    <h2 class="text-center mb-4"><i class="bi bi-grid-3x3-gap-fill"></i> Выберите категорию</h2>
+    <div class="category-cards" id="categoryCards">
+        <div class="category-card" data-category="квест"><i class="bi bi-robot"></i><h5 class="mt-2">Квесты</h5></div>
+        <div class="category-card" data-category="паб"><i class="bi bi-cup-straw"></i><h5 class="mt-2">Бары/Пабы</h5></div>
+        <div class="category-card" data-category="кино"><i class="bi bi-film"></i><h5 class="mt-2">Кинотеатры</h5></div>
+        <div class="category-card" data-category="кафе"><i class="bi bi-cup-hot"></i><h5 class="mt-2">Кафе</h5></div>
+        <div class="category-card" data-category="клуб"><i class="bi bi-music-note-beamed"></i><h5 class="mt-2">Клубы</h5></div>
+    </div>
+</div>
+
+<div class="category-filters" id="categoryFilters"><button class="filter-btn active" data-category="all">Все</button><button class="filter-btn" data-category="квест">🔐 Квесты</button><button class="filter-btn" data-category="паб">🍺 Бары/Пабы</button><button class="filter-btn" data-category="кино">🎬 Выйти в кино</button><button class="filter-btn" data-category="кафе">☕ Кафе</button><button class="filter-btn" data-category="клуб">🎉 Клубы</button></div>
+
+<div class="container-fluid px-0">
+    <div class="section-header"><div class="section-title"><i class="bi bi-compass"></i> Куда пойти в Бишкеке</div><div class="scroll-hint text-muted small"><i class="bi bi-arrow-left-right"></i> листай →</div></div>
+    <div class="places-scroll" id="placesScroll"></div>
+    
+    <div class="calendar-container" style="display: flex; flex-direction: column; align-items: center; margin: 30px 0;">
+        <h4 class="text-center mb-3"><i class="bi bi-calendar-event"></i> Календарь походов</h4>
+        <div style="background: var(--bs-card-bg); border-radius: 16px; padding: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid var(--bs-border-color);">
+            <input type="text" id="inlineCalendar" style="display: none;">
+        </div>
+        <button class="btn btn-sm btn-outline-secondary mt-3" id="clearDateFilterBtn" style="display: none;">
+            <i class="bi bi-x-circle"></i> Показать все дни
+        </button>
+    </div>
+
+    <h2 class="text-center mt-5 mb-4"><i class="bi bi-calendar-event"></i> Активные походы</h2>
+    <div id="eventsList" class="events-grid"></div>
+</div>
+
+<div class="container mt-4">
+    <div class="text-center mb-4">
+        <button class="btn btn-outline-primary" id="toggleFaqBtn" onclick="toggleFaqSection()"><i class="bi bi-question-circle"></i> Частые вопросы</button>
+    </div>
+    <div id="faqSection" style="display: none;">
+        <div class="faq-accordion-item"><div class="faq-accordion-question" onclick="toggleFaqAnswer(this)">Как создать поход? <i class="bi bi-chevron-down"></i></div><div class="faq-accordion-answer">Нажмите на кнопку «Создать компанию» на главной странице.</div></div>
+        <div class="faq-accordion-item"><div class="faq-accordion-question" onclick="toggleFaqAnswer(this)">Как присоединиться к походу? <i class="bi bi-chevron-down"></i></div><div class="faq-accordion-answer">На главной странице нажмите кнопку «Присоединиться».</div></div>
+        <div class="faq-accordion-item"><div class="faq-accordion-question" onclick="toggleFaqAnswer(this)">Как пригласить друга? <i class="bi bi-chevron-down"></i></div><div class="faq-accordion-answer">Нажмите на карточку места → в правой колонке нажмите «Пригласить».</div></div>
+    </div>
+</div>
+
+<div class="cta-section"><h2 class="mb-3">Готов найти компанию?</h2><p class="mb-4">Присоединяйся к сообществу прямо сейчас</p><a href="/create-event.html" class="btn btn-light btn-lg"><i class="bi bi-plus-circle"></i> Создать поход</a></div>
+
+<!-- Модальные окна -->
+<div class="modal fade" id="placeDetailTwoColumnsModal" tabindex="-1"><div class="modal-dialog modal-xl modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="modalPlaceTitle">Информация о месте</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="modal-two-cards" id="modalTwoCardsContainer"><div class="modal-card" id="modalLeftCard"></div><div class="modal-card" id="modalRightCard"></div></div></div></div></div></div>
+<div class="modal fade" id="userProfileModal" tabindex="-1"><div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-header bg-primary text-white"><h5 class="modal-title"><i class="bi bi-person-circle"></i> Профиль пользователя</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body text-center" id="userProfileModalBody"></div></div></div></div>
+<div class="modal fade" id="notificationsModal" tabindex="-1"><div class="modal-dialog modal-dialog-scrollable"><div class="modal-content"><div class="modal-header bg-primary text-white"><h5 class="modal-title"><i class="bi bi-bell-fill"></i> Уведомления</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body p-0" id="notificationsModalBody"></div></div></div></div>
+<div class="modal fade" id="invitesModal" tabindex="-1"><div class="modal-dialog modal-dialog-scrollable"><div class="modal-content"><div class="modal-header bg-primary text-white"><h5 class="modal-title"><i class="bi bi-envelope-paper-fill"></i> Приглашения</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body" id="invitesModalBody"></div></div></div></div>
+
+
+<div id="onboardingOverlay" class="onboarding-overlay">
+    <div class="onboarding-card" id="onboardingCard"></div>
+</div>
+
+<!-- Модальное окно отзывов -->
+<div class="modal fade" id="reviewsModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title"><i class="bi bi-star-fill"></i> Оставить отзывы</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="reviewsModalBody">
+                <!-- Участники для отзыва будут загружены сюда -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="toastContainer" class="position-fixed bottom-0 end-0 p-3" style="z-index: 1100;"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://npmcdn.com/flatpickr/dist/l10n/ru.js"></script>
+<script>
+// ========== 1. АВТОРИЗАЦИЯ ==========
+const token = localStorage.getItem('token');
+const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+if (!token) window.location.href = '/login.html';
+document.getElementById('userName').innerHTML = `<i class="bi bi-person-circle"></i> ${currentUser.name || 'Пользователь'}`;
+document.getElementById('logoutBtn').addEventListener('click', () => { localStorage.clear(); window.location.href = '/login.html'; });
+
+const profile = JSON.parse(localStorage.getItem('profile') || '{}');
+const headerAvatar = document.getElementById('headerAvatar');
+if (headerAvatar) {
+    headerAvatar.src = profile.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${currentUser.name || 'default'}`;
+}
+document.getElementById('userProfileLink')?.addEventListener('click', () => { window.location.href = '/profile.html'; });
+
+// ========== 2. ТЁМНАЯ ТЕМА ==========
+function initDarkMode() {
+    const sw = document.getElementById('darkModeSwitch');
+    const html = document.documentElement;
+    const saved = localStorage.getItem('theme');
+    if (saved === 'dark') { html.setAttribute('data-bs-theme', 'dark'); if (sw) sw.checked = true; }
+    else { html.setAttribute('data-bs-theme', 'light'); if (sw) sw.checked = false; }
+    if (sw) sw.addEventListener('change', e => { html.setAttribute('data-bs-theme', e.target.checked ? 'dark' : 'light'); localStorage.setItem('theme', e.target.checked ? 'dark' : 'light'); });
+}
+
+// ========== 3. ТОСТЫ ==========
+function showToast(message, type = 'success') {
+    const container = document.getElementById('toastContainer');
+    const toast = document.createElement('div');
+    toast.className = `toast align-items-center text-white bg-${type === 'success' ? 'success' : type === 'info' ? 'info' : 'danger'} border-0 mb-2`;
+    toast.setAttribute('role', 'alert');
+    toast.innerHTML = `<div class="d-flex"><div class="toast-body">${message}</div><button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button></div>`;
+    container.appendChild(toast);
+    const bsToast = new bootstrap.Toast(toast, { delay: 3000 });
+    bsToast.show();
+    toast.addEventListener('hidden.bs.toast', () => toast.remove());
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+// ========== 4. БЕЙДЖИ — счётчики приглашений и уведомлений ==========
+// ✅ БАГ 4: периодически обновляем бейджи без перезагрузки
+async function refreshBadges() {
+    try {
+        // Приглашения
+        const invRes = await fetch('/api/invites/pending-count', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (invRes.ok) {
+            const { count } = await invRes.json();
+            const badge = document.getElementById('invitesBadge');
+            const sidebarBadge = document.getElementById('sidebarInvitesBadge');
+            if (count > 0) {
+                badge.textContent = count > 9 ? '9+' : count;
+                badge.style.display = 'inline-block';
+                sidebarBadge.textContent = count > 9 ? '9+' : count;
+                sidebarBadge.style.display = 'inline-block';
+            } else {
+                badge.style.display = 'none';
+                sidebarBadge.style.display = 'none';
+            }
+        }
+
+        // ✅ БАГ 5: уведомления из БД
+        const notifRes = await fetch('/api/notifications/unread-count', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (notifRes.ok) {
+            const { count } = await notifRes.json();
+            const badge = document.getElementById('notificationsBadge');
+            if (count > 0) {
+                badge.textContent = count > 9 ? '9+' : count;
+                badge.style.display = 'inline-block';
+            } else {
+                badge.style.display = 'none';
+            }
+        }
+    } catch(e) { /* тихо игнорируем — не ломаем интерфейс */ }
+}
+
+// Обновляем бейджи каждые 30 секунд
+refreshBadges();
+setInterval(refreshBadges, 30000);
+
+// ========== 5. УВЕДОМЛЕНИЯ (из БД) ==========
+// ✅ БАГ 5: уведомления берутся из реальной таблицы Notifications
+async function showNotifications() {
+    const modalBody = document.getElementById('notificationsModalBody');
+    const modal = new bootstrap.Modal(document.getElementById('notificationsModal'));
+    modalBody.innerHTML = `<div class="text-center py-5"><div class="spinner-border text-primary"></div><p class="mt-2">Загрузка...</p></div>`;
+    modal.show();
+
+    try {
+        const res = await fetch('/api/notifications', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const notifications = await res.json();
+
+        if (!notifications.length) {
+            modalBody.innerHTML = `<div class="text-center py-5 text-muted"><i class="bi bi-bell-slash fs-1"></i><p class="mt-2">Нет уведомлений</p></div>`;
+        } else {
+            modalBody.innerHTML = notifications.map(n => `
+                <div class="p-3 border-bottom ${n.read ? '' : 'bg-light'}">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <strong>${escapeHtml(n.title)}</strong>
+                        <small class="text-muted">${new Date(n.createdAt).toLocaleString()}</small>
+                    </div>
+                    <p class="mb-0 small mt-1">${escapeHtml(n.message)}</p>
+                </div>
+            `).join('');
+        }
+
+        // Отмечаем как прочитанные
+        await fetch('/api/notifications/mark-read', {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        refreshBadges();
+    } catch(e) {
+        modalBody.innerHTML = `<div class="text-center py-5 text-danger"><i class="bi bi-exclamation-triangle fs-1"></i><p>Ошибка загрузки</p></div>`;
+    }
+}
+
+document.getElementById('notificationsBtn').addEventListener('click', showNotifications);
+
+// ========== 6. ПРИГЛАШЕНИЯ ==========
+// ✅ БАГ 2: sendInvite — закрываем модальное окно корректно, не оставляем затемнение
+async function sendInvite(toUserId, toUserName, placeName) {
+    try {
+        const response = await fetch('/api/invite', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            body: JSON.stringify({ toUserId, placeName, eventId: null })
+        });
+        const data = await response.json();
+        if (response.ok) {
+            // ✅ БАГ 2: правильно закрываем модал через getInstance
+            const modalEl = document.getElementById('placeDetailTwoColumnsModal');
+            const existingModal = bootstrap.Modal.getInstance(modalEl);
+            if (existingModal) existingModal.hide();
+
+            // ✅ БАГ 2: убираем затемнение принудительно
+            document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+            document.body.classList.remove('modal-open');
+            document.body.style.removeProperty('padding-right');
+            document.body.style.removeProperty('overflow');
+
+            showToast(`✅ Приглашение отправлено ${toUserName}!`, 'success');
+            refreshBadges();
+        } else {
+            showToast(data.message || 'Ошибка', 'danger');
+        }
+    } catch (error) {
+        showToast('Ошибка соединения', 'danger');
+    }
+}
+
+async function loadInvitesModal() {
+    const modalBody = document.getElementById('invitesModalBody');
+    const modal = new bootstrap.Modal(document.getElementById('invitesModal'));
+    modalBody.innerHTML = `<div class="text-center py-5"><div class="spinner-border text-primary"></div><p class="mt-2">Загрузка...</p></div>`;
+    modal.show();
+
+    try {
+        const response = await fetch('/api/invites', { headers: { 'Authorization': `Bearer ${token}` } });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.message);
+
+        const incoming = data.incoming || [];
+        const outgoing = data.outgoing || [];
+
+        const incomingHtml = incoming.length === 0
+            ? `<div class="text-center py-4 text-muted"><i class="bi bi-inbox fs-3"></i><p class="mb-0">Нет входящих приглашений</p></div>`
+            : incoming.map(inv => `
+                <div class="border-bottom pb-3 mb-3">
+                    <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+                        <div>
+                            <strong>${escapeHtml(inv.fromUser?.name || 'Пользователь')}</strong>
+                            <p class="small text-muted mb-0 mt-1"><i class="bi bi-geo-alt"></i> "${escapeHtml(inv.placeName)}"</p>
+                        </div>
+                        <div>
+                            <button class="btn btn-sm btn-success me-1" onclick="acceptInvite(${inv.id})"><i class="bi bi-check-lg"></i> Принять</button>
+                            <button class="btn btn-sm btn-danger" onclick="rejectInvite(${inv.id})"><i class="bi bi-x-lg"></i> Отклонить</button>
+                        </div>
+                    </div>
+                    <small class="text-muted">${new Date(inv.createdAt).toLocaleString()}</small>
+                </div>
+            `).join('');
+
+        const outgoingHtml = outgoing.length === 0
+            ? `<div class="text-center py-4 text-muted"><i class="bi bi-send fs-3"></i><p class="mb-0">Нет отправленных</p></div>`
+            : outgoing.map(inv => `
+                <div class="border-bottom pb-3 mb-3">
+                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                        <div>
+                            <strong>${escapeHtml(inv.toUser?.name || 'Пользователь')}</strong>
+                            <p class="small mb-0 mt-1"><i class="bi bi-geo-alt"></i> "${escapeHtml(inv.placeName)}"</p>
+                        </div>
+                        <span class="badge ${inv.status === 'pending' ? 'bg-warning' : inv.status === 'accepted' ? 'bg-success' : 'bg-danger'}">
+                            ${inv.status === 'pending' ? '⏳ Ожидает' : inv.status === 'accepted' ? '✅ Принято' : '❌ Отклонено'}
+                        </span>
+                    </div>
+                    <small class="text-muted">${new Date(inv.createdAt).toLocaleString()}</small>
+                </div>
+            `).join('');
+
+        modalBody.innerHTML = `
+            <div class="p-3">
+                <h6 class="mb-3"><i class="bi bi-inbox-fill text-primary"></i> Входящие</h6>
+                ${incomingHtml}
+                <h6 class="mb-3 mt-4"><i class="bi bi-send-fill text-primary"></i> Отправленные</h6>
+                ${outgoingHtml}
+            </div>`;
+
+        refreshBadges();
+    } catch (error) {
+        modalBody.innerHTML = `<div class="text-center py-5 text-danger"><i class="bi bi-exclamation-triangle fs-1"></i><p>Ошибка загрузки</p><button class="btn btn-sm btn-outline-danger mt-2" onclick="loadInvitesModal()">Повторить</button></div>`;
+    }
+}
+
+// ✅ БАГ 3: acceptInvite открывает чат после принятия
+async function acceptInvite(inviteId) {
+    try {
+        const response = await fetch(`/api/invite/${inviteId}/accept`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await response.json();
+
+        if (response.ok) {
+            const invModal = bootstrap.Modal.getInstance(document.getElementById('invitesModal'));
+            if (invModal) invModal.hide();
+
+            refreshBadges();
+            await loadEvents(); // обновляем список — появится кнопка 💬
+
+            if (data.eventId) {
+                // ✅ БАГ 3: показываем тост с кнопкой-ссылкой в чат
+                showToast(`✅ Принято! <a href="/chat.html?eventId=${data.eventId}" class="text-white fw-bold">💬 Открыть чат</a>`, 'success');
+            } else {
+                showToast('✅ Приглашение принято!', 'success');
+            }
+        } else {
+            showToast(data.message || '❌ Ошибка', 'danger');
+        }
+    } catch (error) {
+        showToast('❌ Ошибка соединения', 'danger');
+    }
+}
+
+async function rejectInvite(inviteId) {
+    try {
+        const response = await fetch(`/api/invite/${inviteId}/reject`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (response.ok) {
+            showToast('Приглашение отклонено', 'info');
+            loadInvitesModal();
+        }
+    } catch (error) {
+        showToast('Ошибка соединения', 'danger');
+    }
+}
+
+// ========== 7. ЧАТЫ ==========
+
+// ========== 8. ЗАГРУЗКА ПОЛЬЗОВАТЕЛЕЙ ==========
+// ✅ БАГ 6: теперь allUsersList содержит актуальные аватарки из БД
+let allUsersList = [];
+
+async function loadAllUsers() {
+    try {
+        const res = await fetch('/api/auth/interests/all', { headers: { 'Authorization': `Bearer ${token}` } });
+        if (res.ok) allUsersList = await res.json();
+    } catch(e) { console.error(e); }
+}
+
+// ========== 9. ДАННЫЕ МЕСТ ==========
+const placesData = {
+    ru: [
+        { id: 1, name: "Квест «Тайна старого дома»", desc: "Интерактивный квест в центре Бишкека.", img: "https://placehold.co/600x400?text=Квест+1", tag: "🔐 Квест", category: "квест", address: "ул. Киевская, 45", phone: "+996 700 123 456", instagram: "quest_house", gisLink: "#" },
+        { id: 2, name: "Квест «Побег из тюрьмы»", desc: "Адреналиновый квест.", img: "https://placehold.co/600x400?text=Квест+2", tag: "🔐 Квест", category: "квест", address: "пр. Чуй, 120", phone: "+996 550 789 012", instagram: "escape_kg", gisLink: "#" },
+        { id: 3, name: "Паб «Beer House»", desc: "Крафтовое пиво и спорт.", img: "https://placehold.co/600x400?text=Паб", tag: "🍺 Паб", category: "паб", address: "ул. Абдрахманова, 15", phone: "+996 312 90 90 90", instagram: "beerhouse_kg", gisLink: "#" },
+        { id: 4, name: "Кинотеатр «Ала-Тоо»", desc: "Новинки кино.", img: "https://placehold.co/600x400?text=Кинотеатр", tag: "🎬 Кино", category: "кино", address: "пр. Чуй, 88", phone: "+996 312 62 62 62", instagram: "kinoteatr_alatoo", gisLink: "#" },
+        { id: 5, name: "Арт-кафе «Старый Баку»", desc: "Живая музыка.", img: "https://placehold.co/600x400?text=Кафе", tag: "☕ Кафе", category: "кафе", address: "ул. Токтогула, 100", phone: "+996 555 123 456", instagram: "baku_cafe", gisLink: "#" },
+        { id: 6, name: "Клуб «Metro»", desc: "Главный ночной клуб.", img: "https://placehold.co/600x400?text=Клуб", tag: "🎉 Клуб", category: "клуб", address: "ул. Жибек-Жолу, 50", phone: "+996 700 987 654", instagram: "metro_club_kg", gisLink: "#" }
+    ],
+    ky: [
+        { id: 1, name: "Квест «Эски үйдүн сыры»", desc: "Интерактивдүү квест.", img: "https://placehold.co/600x400?text=Квест+1", tag: "🔐 Квест", category: "квест", address: "Киевская көч., 45", phone: "+996 700 123 456", instagram: "quest_house", gisLink: "#" },
+        { id: 2, name: "Квест «Түрмөдөн качуу»", desc: "Адреналинге толгон квест.", img: "https://placehold.co/600x400?text=Квест+2", tag: "🔐 Квест", category: "квест", address: "Чүй пр., 120", phone: "+996 550 789 012", instagram: "escape_kg", gisLink: "#" },
+        { id: 3, name: "Паб «Beer House»", desc: "Крафт сырасы.", img: "https://placehold.co/600x400?text=Паб", tag: "🍺 Паб", category: "паб", address: "Абдрахманов көч., 15", phone: "+996 312 90 90 90", instagram: "beerhouse_kg", gisLink: "#" },
+        { id: 4, name: "Кинотеатр «Ала-Тоо»", desc: "Жаңы тасмалар.", img: "https://placehold.co/600x400?text=Кинотеатр", tag: "🎬 Кино", category: "кино", address: "Чүй пр., 88", phone: "+996 312 62 62 62", instagram: "kinoteatr_alatoo", gisLink: "#" },
+        { id: 5, name: "Арт-кафе «Эски Баку»", desc: "Жандуу музыка.", img: "https://placehold.co/600x400?text=Кафе", tag: "☕ Кафе", category: "кафе", address: "Токтогул көч., 100", phone: "+996 555 123 456", instagram: "baku_cafe", gisLink: "#" },
+        { id: 6, name: "Клуб «Metro»", desc: "Түнкү клуб.", img: "https://placehold.co/600x400?text=Клуб", tag: "🎉 Клуб", category: "клуб", address: "Жибек-Жолу көч., 50", phone: "+996 700 987 654", instagram: "metro_club_kg", gisLink: "#" }
+    ]
+};
+
+const botUsers = [
+    { id: 101, name: "Айжан", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=ayjan", bio: "Люблю квесты!", interests: ["квест", "кафе"] },
+    { id: 102, name: "Эрмек", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=ermek", bio: "Ищу друзей в кино!", interests: ["кино", "паб"] },
+    { id: 103, name: "Данияр", avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=daniyar", bio: "Люблю вечеринки!", interests: ["клуб", "паб"] }
+];
+
+function getInterestedUsers(category) {
+    // ✅ БАГ 6: берём из актуального allUsersList (с реальными аватарами из БД)
+    let interested = allUsersList.filter(u => u.interests && u.interests.includes(category));
+    const userInterests = JSON.parse(localStorage.getItem('userInterests') || '[]');
+    if (userInterests.includes(category) && currentUser.id && !interested.some(u => u.id === currentUser.id)) {
+        interested.push({
+            id: currentUser.id,
+            name: currentUser.name,
+            avatar: profile.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${currentUser.name}`,
+            bio: 'Мне это интересно!',
+            interests: userInterests
+        });
+    }
+    const bots = botUsers.filter(b => b.interests.includes(category));
+    return [...interested, ...bots];
+}
+
+// ========== 10. КАРТОЧКИ МЕСТ ==========
+let currentLang = 'ru', currentCategory = 'all', currentSearch = '';
+
+function filterPlaces(places) { return places.filter(p => (currentCategory === 'all' || p.category === currentCategory) && (currentSearch === '' || p.name.toLowerCase().includes(currentSearch.toLowerCase()))); }
+
+function renderPlaces(lang) {
+    const allPlaces = placesData[lang];
+    if (!allPlaces) return;
+    const filteredPlaces = filterPlaces(allPlaces);
+    const container = document.getElementById('placesScroll');
+    if (!container) return;
+    if (!filteredPlaces.length) {
+        container.innerHTML = `<div class="text-center text-muted w-100 py-5">😔 Ничего не найдено</div>`;
+        return;
+    }
+    container.innerHTML = filteredPlaces.map(place => `
+        <div class="place-card" onclick="openPlaceModal(${place.id})">
+            <div class="card-body">
+                <span class="place-tag">${place.tag || ''}</span>
+                <h4>${place.name || 'Без названия'}</h4>
+                <p>${(place.desc || 'Описание отсутствует').substring(0, 80)}...</p>
+            </div>
+        </div>
+    `).join('');
+}
+
+// ========== 11. МОДАЛЬНОЕ ОКНО МЕСТА ==========
+function openPlaceModal(placeId) {
+    window.currentPlaceModalId = placeId;
+    const place = placesData[currentLang].find(p => p.id === placeId);
+    if (!place) { alert('Информация о месте временно недоступна'); return; }
+
+    const imgHtml = `<div class="place-detail-img" style="background:var(--bs-secondary-bg); display:flex; align-items:center; justify-content:center;"><i class="bi bi-geo-alt fs-1 text-primary"></i></div>`;
+    const leftHtml = `
+        ${imgHtml}
+        <h4><i class="bi bi-geo-alt-fill text-primary"></i> ${place.name}</h4>
+        <p class="mt-2 text-muted">${place.desc || 'Описание отсутствует'}</p>
+        <div class="mt-3">
+            <p><i class="bi bi-geo-alt"></i> <strong>Адрес:</strong> ${place.address || 'Не указан'}</p>
+            <p><i class="bi bi-telephone"></i> <strong>Телефон:</strong> ${place.phone || 'Не указан'}</p>
+        </div>
+        <div class="mt-4 d-flex flex-wrap gap-2">
+            <a href="${place.gisLink || '#'}" target="_blank" class="btn btn-outline-primary btn-sm"><i class="bi bi-map"></i> 2ГИС</a>
+            <a href="https://instagram.com/${place.instagram || ''}" target="_blank" class="btn btn-outline-danger btn-sm"><i class="bi bi-instagram"></i> Instagram</a>
+            <button class="btn btn-primary btn-sm" onclick="goToCreate('${place.name.replace(/'/g, "\\'")}')"><i class="bi bi-plus-circle"></i> Создать поход</button>
+        </div>
+    `;
+
+    // ✅ БАГ 6: перегружаем allUsersList перед открытием, чтобы аватарки были актуальными
+    const users = getInterestedUsers(place.category);
+    let rightHtml = `<h5 class="mb-3"><i class="bi bi-people-fill"></i> Кому это интересно</h5>`;
+
+    if (!users.length) {
+        rightHtml += `<p class="text-muted text-center py-3">Пока никто не добавил эту категорию</p>`;
+    } else {
+        rightHtml += `<div class="users-list">`;
+        users.forEach(user => {
+            // ✅ БАГ 6: приоритет — /uploads/ путь из БД, потом http, потом dicebear
+            const avatarUrl = user.avatar
+                ? (user.avatar.startsWith('/uploads/') || user.avatar.startsWith('http'))
+                    ? user.avatar
+                    : `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(user.name || user.id)}`
+                : `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(user.name || user.id)}`;
+
+            rightHtml += `
+                <div class="user-item-compact" onclick="showProfile(${user.id})">
+                    <div class="user-info-compact">
+                        <img src="${avatarUrl}" class="user-avatar-small" alt="${user.name}"
+                             onerror="this.src='https://api.dicebear.com/7.x/avataaars/svg?seed=${user.id}'">
+                        <div>
+                            <div class="user-name-compact">${user.name}</div>
+                            <small class="text-muted">${user.bio ? user.bio.substring(0, 40) : ''}</small>
+                        </div>
+                    </div>
+                    ${user.id !== currentUser.id ? `<button class="invite-btn-small" onclick="event.stopPropagation(); sendInvite(${user.id}, '${user.name.replace(/'/g,"\\'")}', '${place.name.replace(/'/g,"\\'")}')">Пригласить</button>` : ''}
+                </div>
+            `;
+        });
+        rightHtml += `</div>`;
+    }
+
+    document.getElementById('modalLeftCard').innerHTML = leftHtml;
+    document.getElementById('modalRightCard').innerHTML = rightHtml;
+    document.getElementById('modalPlaceTitle').innerText = place.name;
+
+    // ✅ БАГ 6: при каждом открытии обновляем список пользователей
+    loadAllUsers().then(() => {
+        const updatedUsers = getInterestedUsers(place.category);
+        let updatedRight = `<h5 class="mb-3"><i class="bi bi-people-fill"></i> Кому это интересно</h5>`;
+        if (!updatedUsers.length) {
+            updatedRight += `<p class="text-muted text-center py-3">Пока никто не добавил эту категорию</p>`;
+        } else {
+            updatedRight += `<div class="users-list">`;
+            updatedUsers.forEach(user => {
+                const avatarUrl = user.avatar && (user.avatar.startsWith('/uploads/') || user.avatar.startsWith('http'))
+                    ? user.avatar
+                    : `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(user.name || user.id)}`;
+                updatedRight += `
+                    <div class="user-item-compact" onclick="showProfile(${user.id})">
+                        <div class="user-info-compact">
+                            <img src="${avatarUrl}" class="user-avatar-small" alt="${user.name}"
+                                 onerror="this.src='https://api.dicebear.com/7.x/avataaars/svg?seed=${user.id}'">
+                            <div>
+                                <div class="user-name-compact">${user.name}</div>
+                                <small class="text-muted">${user.bio ? user.bio.substring(0, 40) : ''}</small>
+                            </div>
+                        </div>
+                        ${user.id !== currentUser.id ? `<button class="invite-btn-small" onclick="event.stopPropagation(); sendInvite(${user.id}, '${user.name.replace(/'/g,"\\'")}', '${place.name.replace(/'/g,"\\'")}')">Пригласить</button>` : ''}
+                    </div>`;
+            });
+            updatedRight += `</div>`;
+        }
+        document.getElementById('modalRightCard').innerHTML = updatedRight;
+    });
+
+    new bootstrap.Modal(document.getElementById('placeDetailTwoColumnsModal')).show();
+}
+
+function showProfile(userId) {
+    const modalBody = document.getElementById('userProfileModalBody');
+    if (!modalBody) return;
+    modalBody.innerHTML = '<div class="spinner-border text-primary my-4"></div>';
+    const modalEl = document.getElementById('userProfileModal');
+    if (modalEl) new bootstrap.Modal(modalEl).show();
+
+    fetch(`/api/auth/users/${userId}`, { headers: { 'Authorization': `Bearer ${token}` } })
+        .then(r => r.json())
+        .then(u => {
+            if (!u || !u.id) { modalBody.innerHTML = '<p class="text-muted">Пользователь не найден</p>'; return; }
+            const interests = Array.isArray(u.interests) ? u.interests : JSON.parse(u.interests || '[]');
+            const avatarSrc = u.avatar && (u.avatar.startsWith('http') || u.avatar.startsWith('/uploads/'))
+                ? u.avatar
+                : `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(u.name)}`;
+            modalBody.innerHTML = `
+                <img src="${avatarSrc}" class="rounded-circle mb-3" width="100" height="100"
+                     style="border:4px solid #667eea; object-fit:cover;"
+                     onerror="this.src='https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(u.name)}'">
+                <h4>${u.name} ${u.avgRating ? `<span class="badge bg-warning text-dark fs-6" style="vertical-align: middle;"><i class="bi bi-star-fill"></i> ${u.avgRating}</span>` : ''}</h4>
+                <div class="mt-3"><h6>Интересы</h6>${interests.length ? interests.map(i => `<span class="badge bg-primary me-1">${i}</span>`).join('') : '<span class="text-muted">не указаны</span>'}</div>
+                <button class="btn btn-outline-primary mt-4" data-bs-dismiss="modal">Закрыть</button>`;
+        })
+        .catch(() => { modalBody.innerHTML = '<p class="text-danger">Ошибка загрузки</p>'; });
+}
+
+function goToCreate(placeName) {
+    const modal = bootstrap.Modal.getInstance(document.getElementById('placeDetailTwoColumnsModal'));
+    if (modal) modal.hide();
+    // Убираем backdrop
+    document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+    document.body.classList.remove('modal-open');
+    document.body.style.removeProperty('overflow');
+    window.location.href = `/create-event.html?place=${encodeURIComponent(placeName)}`;
+}
+
+// ========== 12. ПОХОДЫ ==========
+let allEvents = [];
+let currentDateFilter = null;
+let fpCalendar = null;
+
+function renderEvents(eventsToRender) {
+    const container = document.getElementById('eventsList');
+    if (!container) return;
+
+    if (!eventsToRender.length) {
+        if (currentDateFilter) {
+            container.innerHTML = `<div class="text-center py-5 text-muted"><i class="bi bi-calendar-x fs-1"></i><p class="mt-2">📭 Нет походов на выбранную дату.</p><a href="/create-event.html" class="btn btn-primary mt-2"><i class="bi bi-plus-circle"></i> Создать поход</a></div>`;
+        } else {
+            container.innerHTML = `<div class="text-center py-5 text-muted"><i class="bi bi-calendar-x fs-1"></i><p class="mt-2">📭 Нет активных походов.</p><a href="/create-event.html" class="btn btn-primary mt-2"><i class="bi bi-plus-circle"></i> Создать первый поход</a></div>`;
+        }
+        return;
+    }
+
+    container.innerHTML = eventsToRender.map(ev => {
+        const isCreator = ev.creatorId === currentUser.id;
+        const isParticipant = ev.participants?.includes(currentUser.id);
+        const isFull = ev.participantsCount >= ev.maxParticipants;
+
+        let joinBtn = '';
+        if (ev.status === 'completed') {
+            joinBtn = `<span class="badge bg-secondary mb-1">✅ Завершён</span><br>`;
+            if (isParticipant || isCreator) {
+                joinBtn += `<button class="btn btn-sm btn-outline-primary mt-1" onclick="openReviewsModal(${ev.id})">⭐ Оценить</button>`;
+            }
+        } else {
+            if (!isCreator && !isParticipant) {
+                joinBtn = `<button class="btn btn-join btn-sm" onclick="joinEvent(${ev.id})" ${isFull ? 'disabled' : ''}>${isFull ? '🚫 Мест нет' : 'Присоединиться'}</button>`;
+            } else if (isParticipant && !isCreator) {
+                joinBtn = `<span class="badge bg-success mb-1">✅ Участник</span><br><button class="btn btn-sm btn-info mt-1" onclick="openChat(${ev.id})">💬 Чат</button>`;
+            }
+        }
+
+        let creatorControls = '';
+        if (isCreator) {
+            creatorControls = `
+                <span class="badge bg-primary mb-1">👑 Ваш</span><br>
+                ${ev.status === 'active' ? `<button class="btn btn-sm btn-success mt-1" onclick="completeEvent(${ev.id})">✅ Завершить</button>` : ''}
+                <button class="btn btn-sm btn-warning mt-1" onclick="editEvent(${ev.id})">✏️</button>
+                <button class="btn btn-sm btn-danger mt-1" onclick="deleteEvent(${ev.id})">🗑️</button>
+                <button class="btn btn-sm btn-info mt-1" onclick="openChat(${ev.id})">💬</button>
+            `;
+        }
+
+        return `
+            <div class="event-card" style="${ev.status === 'completed' ? 'opacity: 0.8;' : ''}">
+                <div class="row align-items-center">
+                    <div class="col-7">
+                        <div class="event-title fw-bold">📍 ${escapeHtml(ev.place?.name || 'Место')}</div>
+                        <div class="event-meta text-muted small">📅 ${new Date(ev.datetime).toLocaleString()} · 👥 ${ev.participantsCount || 0}/${ev.maxParticipants}</div>
+                    </div>
+                    <div class="col-5 text-end">
+                        ${joinBtn}
+                        ${creatorControls}
+                    </div>
+                </div>
+            </div>`;
+    }).join('');
+}
+
+async function loadEvents() {
+    const container = document.getElementById('eventsList');
+    if (!container) return;
+    container.innerHTML = '<div class="text-center py-4"><div class="spinner-border text-primary"></div><p class="mt-2">Загрузка походов...</p></div>';
+
+    try {
+        const response = await fetch('/api/events', { headers: { 'Authorization': `Bearer ${token}` } });
+        if (!response.ok) throw new Error('Ошибка загрузки');
+        const raw = await response.json();
+        const events = Array.isArray(raw) ? raw : (raw.events || []);
+        allEvents = events;
+        
+        applyDateFilter();
+        updateCalendarDots();
+    } catch (error) {
+        container.innerHTML = `<div class="text-center text-danger py-4">⚠️ Ошибка загрузки походов.</div>`;
+    }
+}
+
+function editEvent(id) { const dt = prompt('Новая дата (ГГГГ-ММ-ДД ЧЧ:ММ)'); const max = prompt('Новое кол-во участников'); if (!dt || !max) return; fetch(`/api/events/${id}`, { method: 'PUT', headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ datetime: dt.replace(' ', 'T') + ':00', maxParticipants: parseInt(max) }) }).then(res => res.ok ? (showToast('✅ Обновлено'), loadEvents()) : res.json().then(err => showToast(err.message, 'danger'))); }
+function deleteEvent(id) { if (confirm('Удалить?')) fetch(`/api/events/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } }).then(res => res.ok ? (showToast('Удалено', 'info'), loadEvents()) : res.json().then(err => showToast(err.message, 'danger'))); }
+function openChat(id) { window.location.href = `/chat.html?eventId=${id}`; }
+
+window.completeEvent = async (id) => {
+    if (!confirm('Вы уверены, что хотите завершить поход? После этого можно будет оставить отзывы участникам.')) return;
+    try {
+        const res = await fetch(`/api/events/${id}/complete`, { method: 'POST', headers: { 'Authorization': `Bearer ${token}` } });
+        if (res.ok) {
+            showToast('✅ Поход успешно завершён!', 'success');
+            loadEvents();
+            openReviewsModal(id);
+        } else {
+            const err = await res.json();
+            showToast(err.message, 'danger');
+        }
+    } catch(e) { showToast('Ошибка сервера', 'danger'); }
+};
+
+window.openReviewsModal = async (eventId) => {
+    const modalBody = document.getElementById('reviewsModalBody');
+    const modal = new bootstrap.Modal(document.getElementById('reviewsModal'));
+    modalBody.innerHTML = '<div class="text-center py-4"><div class="spinner-border text-primary"></div></div>';
+    modal.show();
+
+    try {
+        const res = await fetch(`/api/events/${eventId}/participants`, { headers: { 'Authorization': `Bearer ${token}` } });
+        const participants = await res.json();
+        
+        // Получаем сам ивент, чтобы знать создателя
+        const eventRes = await fetch(`/api/events/${eventId}`, { headers: { 'Authorization': `Bearer ${token}` } });
+        const eventInfo = await eventRes.json();
+        if (eventInfo.creator && eventInfo.creator.id !== currentUser.id && !participants.some(p => p.id === eventInfo.creator.id)) {
+            participants.push(eventInfo.creator);
+        }
+
+        const others = participants.filter(p => p.id !== currentUser.id);
+        if (others.length === 0) {
+            modalBody.innerHTML = '<div class="text-center text-muted">Кроме вас в походе никого не было.</div>';
+            return;
+        }
+
+        modalBody.innerHTML = others.map(p => `
+            <div class="card mb-3 shadow-sm border-0">
+                <div class="card-body d-flex align-items-center gap-3">
+                    <img src="${p.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed='+p.name}" class="rounded-circle" width="50" height="50" style="object-fit:cover">
+                    <div class="flex-grow-1">
+                        <h6 class="mb-1 fw-bold">${p.name}</h6>
+                        <div class="rating-stars mb-2" id="stars-${p.id}">
+                            <i class="bi bi-star" style="cursor:pointer; color:#f59e0b;" onclick="setRating(${p.id}, 1)"></i>
+                            <i class="bi bi-star" style="cursor:pointer; color:#f59e0b;" onclick="setRating(${p.id}, 2)"></i>
+                            <i class="bi bi-star" style="cursor:pointer; color:#f59e0b;" onclick="setRating(${p.id}, 3)"></i>
+                            <i class="bi bi-star" style="cursor:pointer; color:#f59e0b;" onclick="setRating(${p.id}, 4)"></i>
+                            <i class="bi bi-star" style="cursor:pointer; color:#f59e0b;" onclick="setRating(${p.id}, 5)"></i>
+                        </div>
+                        <input type="hidden" id="rating-val-${p.id}" value="0">
+                        <input type="text" class="form-control form-control-sm mb-2" id="comment-${p.id}" placeholder="Комментарий (необязательно)">
+                        <button class="btn btn-sm btn-primary w-100" onclick="submitReview(${eventId}, ${p.id})">Отправить отзыв</button>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    } catch (e) {
+        modalBody.innerHTML = '<div class="text-danger text-center">Ошибка загрузки участников</div>';
+    }
+};
+
+window.setRating = (userId, rating) => {
+    document.getElementById(`rating-val-${userId}`).value = rating;
+    const stars = document.getElementById(`stars-${userId}`).querySelectorAll('i');
+    stars.forEach((star, index) => {
+        if (index < rating) {
+            star.classList.replace('bi-star', 'bi-star-fill');
+        } else {
+            star.classList.replace('bi-star-fill', 'bi-star');
+        }
+    });
+};
+
+window.submitReview = async (eventId, toUserId) => {
+    const rating = document.getElementById(`rating-val-${toUserId}`).value;
+    const comment = document.getElementById(`comment-${toUserId}`).value;
+
+    if (rating == 0) {
+        showToast('Пожалуйста, выберите оценку', 'warning');
+        return;
+    }
+
+    try {
+        const res = await fetch('/api/reviews', {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ eventId, toUserId, rating: parseInt(rating), comment })
+        });
+        const data = await res.json();
+        if (res.ok) {
+            showToast('✅ Отзыв успешно сохранен', 'success');
+            // Убираем форму
+            const card = document.getElementById(`comment-${toUserId}`).closest('.card');
+            card.innerHTML = `<div class="card-body text-center text-success"><i class="bi bi-check-circle-fill"></i> Спасибо за отзыв!</div>`;
+        } else {
+            showToast(data.message, 'danger');
+        }
+    } catch(e) {
+        showToast('Ошибка при отправке', 'danger');
+    }
+};
+
+window.joinEvent = async (id) => {
+    try {
+        const res = await fetch(`/api/events/${id}/join`, { method: 'POST', headers: { 'Authorization': `Bearer ${token}` } });
+        if (res.ok) {
+            showToast('✅ Вы присоединились! <a href="/chat.html?eventId=' + id + '" class="text-white fw-bold">💬 Открыть чат</a>', 'success');
+            loadEvents();
+        } else {
+            const err = await res.json();
+            showToast(err.message, 'danger');
+        }
+    } catch(e) { showToast('Ошибка', 'danger'); }
+};
+
+function applyDateFilter() {
+    if (!currentDateFilter) {
+        renderEvents(allEvents);
+        document.getElementById('clearDateFilterBtn').style.display = 'none';
+        return;
+    }
+    const filterDateStr = new Date(currentDateFilter).toDateString();
+    const filtered = allEvents.filter(ev => new Date(ev.datetime).toDateString() === filterDateStr);
+    renderEvents(filtered);
+    document.getElementById('clearDateFilterBtn').style.display = 'inline-block';
+}
+
+function initCalendar() {
+    const fpEl = document.getElementById('inlineCalendar');
+    if (!fpEl) return;
+    
+    fpCalendar = flatpickr(fpEl, {
+        inline: true,
+        locale: "ru",
+        onChange: function(selectedDates, dateStr, instance) {
+            if (selectedDates.length > 0) {
+                currentDateFilter = selectedDates[0];
+                applyDateFilter();
+            }
+        }
+    });
+
+    document.getElementById('clearDateFilterBtn')?.addEventListener('click', () => {
+        currentDateFilter = null;
+        fpCalendar.clear();
+        applyDateFilter();
+    });
+}
+
+function updateCalendarDots() {
+    // Эта функция может быть расширена для добавления точек на дни с событиями
+    // Для этого потребуется кастомный рендер в flatpickr
+}
+
+// ========== 13. ФИЛЬТРЫ ==========
+function initFilters() {
+    document.querySelectorAll('.filter-btn').forEach(btn => btn.addEventListener('click', () => { document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); currentCategory = btn.dataset.category; renderPlaces(currentLang); }));
+    document.getElementById('searchInput')?.addEventListener('input', e => { currentSearch = e.target.value; renderPlaces(currentLang); });
+}
+
+// ========== 14. АНИМАЦИЯ СКРОЛЛА ==========
+function checkVisibility() { document.querySelectorAll('.info-section, .category-cards, .category-filters, .section-header, .events-grid').forEach(el => { if (el.getBoundingClientRect().top < window.innerHeight - 100) el.classList.add('visible'); }); }
+window.addEventListener('scroll', checkVisibility);
+window.addEventListener('load', checkVisibility);
+window.addEventListener('scroll', () => { const hero = document.querySelector('.hero'); if (hero) hero.style.backgroundPosition = `center ${window.pageYOffset * 0.3}px`; });
+
+// ========== 15. ЯЗЫК ==========
+window.switchLanguage = (lang) => { currentLang = lang; localStorage.setItem('lang', lang); renderPlaces(lang); loadEvents(); };
+
+// ========== 16. ОНБОРДИНГ ==========
+let step = 0;
+const steps = [
+    { title: "Нажми на карточку места", text: "Чтобы посмотреть информацию и пригласить друзей." },
+    { title: "Нажми «Присоединиться»", text: "Чтобы стать участником похода и попасть в чат." },
+    { title: "Приглашай друзей", text: "В карточке места есть кнопка «Пригласить»." }
+];
+function startOnboarding() { step = 0; showStep(); document.getElementById('onboardingOverlay').style.display = 'flex'; }
+function showStep() { const card = document.getElementById('onboardingCard'); card.innerHTML = `<h4>📌 ${steps[step].title}</h4><p>${steps[step].text}</p><div class="onboarding-step-buttons">${step < steps.length-1 ? '<button class="btn btn-primary" id="onbNext">Далее</button>' : '<button class="btn btn-success" id="onbFinish">Понятно</button>'}<button class="btn btn-secondary" id="onbSkip">Пропустить</button></div>`; document.getElementById('onbNext')?.addEventListener('click', () => { step++; showStep(); }); document.getElementById('onbSkip')?.addEventListener('click', finishOnboarding); document.getElementById('onbFinish')?.addEventListener('click', finishOnboarding); }
+function finishOnboarding() { document.getElementById('onboardingOverlay').style.display = 'none'; localStorage.setItem('onboardingShown', 'true'); }
+if (!localStorage.getItem('onboardingShown')) setTimeout(startOnboarding, 1000);
+
+// ========== 17. FAQ ==========
+function toggleFaqSection() { const fs = document.getElementById('faqSection'); const btn = document.getElementById('toggleFaqBtn'); if (fs.style.display === 'none') { fs.style.display = 'block'; btn.innerHTML = '<i class="bi bi-x-circle"></i> Скрыть'; } else { fs.style.display = 'none'; btn.innerHTML = '<i class="bi bi-question-circle"></i> Вопросы'; } }
+function toggleFaqAnswer(el) { el.classList.toggle('active'); el.nextElementSibling.classList.toggle('show'); }
+
+// ========== 18. WELCOME BANNER ==========
+function checkAndShowWelcomeBanner() {
+    if (!token) return;
+    fetch('/api/events/user', { headers: { 'Authorization': `Bearer ${token}` } })
+        .then(r => r.json())
+        .then(events => { if (events.length === 0) { const b = document.getElementById('welcomeBanner'); if (b) b.style.display = 'block'; } })
+        .catch(() => {});
+}
+function closeWelcomeBanner() { document.getElementById('welcomeBanner').style.display = 'none'; }
+
+// ========== 19. ЗАПУСК ==========
+document.querySelectorAll('.category-card').forEach(card => card.addEventListener('click', () => {
+    const place = placesData[currentLang].find(p => p.category === card.dataset.category);
+    if (place) openPlaceModal(place.id);
+}));
+
+initDarkMode();
+initFilters();
+initCalendar();
+
+const savedLang = localStorage.getItem('lang');
+if (savedLang === 'ky') { currentLang = 'ky'; renderPlaces('ky'); } else { renderPlaces('ru'); }
+
+loadEvents();
+loadAllUsers();
+checkAndShowWelcomeBanner();
+
+// Экспорты для inline-обработчиков
+window.sendInvite = sendInvite;
+window.acceptInvite = acceptInvite;
+window.rejectInvite = rejectInvite;
+window.loadInvitesModal = loadInvitesModal;
+
+window.openPlaceModal = openPlaceModal;
+window.showProfile = showProfile;
+window.goToCreate = goToCreate;
+window.openChat = openChat;
+window.joinEvent = window.joinEvent;
+window.editEvent = editEvent;
+window.deleteEvent = deleteEvent;
+window.toggleFaqAnswer = toggleFaqAnswer;
+window.toggleFaqSection = toggleFaqSection;
+window.closeWelcomeBanner = closeWelcomeBanner;
+</script>
+</body>
+</html>

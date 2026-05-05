@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="ru" data-bs-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Профиль | Find&Go</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <style>
+        body { background: var(--bs-body-bg); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+        .navbar { background: rgba(255,255,255,0.95); backdrop-filter: blur(20px); padding: 12px 0; }
+        [data-bs-theme="dark"] .navbar { background: rgba(33,37,41,0.95); }
+        .profile-avatar { width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 4px solid #667eea; margin-bottom: 20px; }
+        .profile-card { background: var(--bs-card-bg); border-radius: 24px; padding: 30px; box-shadow: 0 8px 20px rgba(0,0,0,0.08); margin-bottom: 24px; }
+        .category-badge { display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; background: var(--bs-secondary-bg); border-radius: 30px; cursor: pointer; transition: all 0.2s; }
+        .category-badge.selected { background: linear-gradient(135deg, #667eea, #764ba2); color: white; }
+        .category-badge:hover { transform: translateY(-2px); }
+        .fact-item { background: var(--bs-secondary-bg); border-radius: 16px; padding: 16px; margin-bottom: 12px; }
+        .btn-save { background: linear-gradient(135deg, #667eea, #764ba2); border: none; border-radius: 30px; padding: 12px 32px; color: white; font-weight: 600; }
+        .btn-edit { background: none; border: 1px solid var(--bs-border-color); border-radius: 30px; padding: 6px 16px; }
+        .avatar-options { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 16px; }
+        .avatar-option { width: 60px; height: 60px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; transition: all 0.2s; }
+        .avatar-option:hover { transform: scale(1.1); }
+        .avatar-option.selected { border-color: #667eea; transform: scale(1.05); }
+        @media (max-width: 600px) { .profile-avatar { width: 80px; height: 80px; } }
+        .spinner-border-sm {
+    width: 1rem;
+    height: 1rem;
+    border-width: 0.2em;
+}
+
+@keyframes spinner-border {
+    to { transform: rotate(360deg); }
+}
+
+.spinner-border {
+    display: inline-block;
+    animation: spinner-border 0.75s linear infinite;
+}
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg fixed-top">
+    <div class="container">
+        <a class="navbar-brand fw-bold" href="/"><i class="bi bi-compass-fill"></i> Find&Go</a>
+        <div class="ms-auto d-flex align-items-center gap-2">
+            <div class="theme-switch me-2">
+                <i class="bi bi-moon-stars"></i>
+                <div class="form-check form-switch d-inline-block ms-1">
+                    <input class="form-check-input" type="checkbox" id="darkModeSwitchProfile">
+                </div>
+            </div>
+            <span id="userName" class="fw-bold"></span>
+            <button id="logoutBtn" class="btn btn-sm btn-outline-danger">Выйти</button>
+        </div>
+    </div>
+</nav>
+
+<div class="container mt-5 pt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Карточка профиля -->
+            <!-- Карточка профиля -->
+<div class="profile-card text-center">
+    <img id="avatar" class="profile-avatar" src="https://api.dicebear.com/7.x/avataaars/svg?seed=default" alt="Аватар">
+    
+    <!-- Кнопка выбора аватара (из предложенных) -->
+    <button class="btn btn-sm btn-edit mb-2" onclick="showAvatarSelector()">
+        <i class="bi bi-images"></i> Выбрать аватар
+    </button>
+    
+    <!-- Кнопка загрузки своего фото -->
+    <button class="btn btn-sm btn-primary mb-2" onclick="document.getElementById('avatarUpload').click()">
+        <i class="bi bi-upload"></i> Загрузить фото
+    </button>
+    <input type="file" id="avatarUpload" accept="image/*" style="display: none;">
+    
+    <div id="avatarSelector" style="display: none;" class="avatar-options justify-content-center">
+        <img class="avatar-option" src="https://api.dicebear.com/7.x/avataaars/svg?seed=1" onclick="selectAvatar('https://api.dicebear.com/7.x/avataaars/svg?seed=1')">
+        <img class="avatar-option" src="https://api.dicebear.com/7.x/avataaars/svg?seed=2" onclick="selectAvatar('https://api.dicebear.com/7.x/avataaars/svg?seed=2')">
+        <img class="avatar-option" src="https://api.dicebear.com/7.x/avataaars/svg?seed=3" onclick="selectAvatar('https://api.dicebear.com/7.x/avataaars/svg?seed=3')">
+        <img class="avatar-option" src="https://api.dicebear.com/7.x/avataaars/svg?seed=4" onclick="selectAvatar('https://api.dicebear.com/7.x/avataaars/svg?seed=4')">
+        <img class="avatar-option" src="https://api.dicebear.com/7.x/avataaars/svg?seed=5" onclick="selectAvatar('https://api.dicebear.com/7.x/avataaars/svg?seed=5')">
+        <img class="avatar-option" src="https://api.dicebear.com/7.x/avataaars/svg?seed=6" onclick="selectAvatar('https://api.dicebear.com/7.x/avataaars/svg?seed=6')">
+    </div>
+    
+    <h2 id="userFullName" class="mb-2"></h2>
+    <p class="text-muted"><i class="bi bi-envelope"></i> <span id="userEmail"></span></p>
+</div>
+            
+            <!-- Категории интересов (синхронизированы с index.html) -->
+            <div class="profile-card">
+                <h4><i class="bi bi-star-fill text-warning"></i> Мои интересы</h4>
+                <p class="text-muted small">Выбери категории, которые тебе интересны</p>
+                <div class="d-flex flex-wrap gap-2" id="categoriesContainer">
+                    <span class="category-badge" data-category="квест"><i class="bi bi-robot"></i> Квесты</span>
+                    <span class="category-badge" data-category="паб"><i class="bi bi-cup-straw"></i> Бары/Пабы</span>
+                    <span class="category-badge" data-category="кино"><i class="bi bi-film"></i> Кино</span>
+                    <span class="category-badge" data-category="кафе"><i class="bi bi-cup-hot"></i> Кафе</span>
+                    <span class="category-badge" data-category="клуб"><i class="bi bi-music-note-beamed"></i> Клубы</span>
+                </div>
+            </div>
+            
+            <!-- Рейтинг и отзывы -->
+            <div class="profile-card">
+                <h4><i class="bi bi-star-fill text-warning"></i> Рейтинг и отзывы</h4>
+                <div class="row align-items-center mb-4">
+                    <div class="col-4 text-center">
+                        <h1 class="display-3 fw-bold mb-0" id="avgRatingValue">0.0</h1>
+                        <div class="text-warning fs-4">
+                            <i class="bi bi-star-fill"></i>
+                        </div>
+                        <div class="text-muted small mt-1" id="reviewsCount">0 отзывов</div>
+                    </div>
+                    <div class="col-8">
+                        <p class="text-muted small mb-0">Рейтинг формируется на основе оценок других участников после совместных походов.</p>
+                    </div>
+                </div>
+                
+                <h6 class="fw-bold mb-3">Последние отзывы</h6>
+                <div id="reviewsList">
+                    <div class="text-center text-muted small py-3">Пока нет отзывов</div>
+                </div>
+            </div>
+            
+            <!-- Факты о себе -->
+            <div class="profile-card">
+                <h4><i class="bi bi-chat-quote"></i> Факты обо мне</h4>
+                <p class="text-muted small">Добавь 2 интересных факта о себе</p>
+                <div id="factsContainer">
+                    <div class="fact-item"><i class="bi bi-1-circle me-2"></i><span id="fact1Text" class="fact-text"></span><button class="btn btn-sm btn-edit float-end" onclick="editFact(1)">✏️</button></div>
+                    <div class="fact-item"><i class="bi bi-2-circle me-2"></i><span id="fact2Text" class="fact-text"></span><button class="btn btn-sm btn-edit float-end" onclick="editFact(2)">✏️</button></div>
+                </div>
+            </div>
+            
+            <div class="text-center mb-5">
+                <button class="btn btn-save" onclick="saveProfile()"><i class="bi bi-check-lg"></i> Сохранить профиль</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Контейнер для тостов -->
+<div id="toastContainer" class="position-fixed bottom-0 end-0 p-3" style="z-index: 1100;"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // ========== АВТОРИЗАЦИЯ ==========
+    const token = localStorage.getItem('token');
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    if (!token) window.location.href = '/login.html';
+    
+    document.getElementById('userName').innerHTML = `<i class="bi bi-person-circle"></i> ${user.name || 'Пользователь'}`;
+    document.getElementById('userFullName').innerText = user.name || 'Пользователь';
+    document.getElementById('userEmail').innerText = user.email || '';
+    
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        window.location.href = '/login.html';
+    });
+    
+    // ========== ЗАГРУЗКА ПРОФИЛЯ (из БД + localStorage) ==========
+    let profile = JSON.parse(localStorage.getItem('profile') || '{}');
+
+    // При открытии страницы — загружаем актуальные данные из БД
+    async function loadProfileFromServer() {
+        try {
+            const res = await fetch('/api/auth/profile', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (!res.ok) return;
+            const serverData = await res.json();
+
+            // Обновляем имя и email
+            document.getElementById('userFullName').innerText = serverData.name || user.name;
+            document.getElementById('userEmail').innerText = serverData.email || user.email;
+
+            // Аватар из БД
+            if (serverData.avatar && (serverData.avatar.startsWith('http') || serverData.avatar.startsWith('/uploads/'))) {
+                document.getElementById('avatar').src = serverData.avatar + '?t=' + Date.now();
+                profile.avatar = serverData.avatar;
+            }
+
+            // Интересы из БД
+            const serverInterests = Array.isArray(serverData.interests)
+                ? serverData.interests
+                : JSON.parse(serverData.interests || '[]');
+            if (serverInterests.length > 0) {
+                profile.categories = serverInterests;
+                document.querySelectorAll('.category-badge').forEach(badge => {
+                    const cat = badge.getAttribute('data-category');
+                    badge.classList.toggle('selected', serverInterests.includes(cat));
+                });
+            }
+
+            // Bio → факты
+            if (serverData.bio) {
+                try {
+                    const bioData = JSON.parse(serverData.bio);
+                    if (bioData.fact1) { document.getElementById('fact1Text').innerText = bioData.fact1; profile.fact1 = bioData.fact1; }
+                    if (bioData.fact2) { document.getElementById('fact2Text').innerText = bioData.fact2; profile.fact2 = bioData.fact2; }
+                } catch(e) { /* bio не JSON — просто строка */ }
+            }
+
+            localStorage.setItem('profile', JSON.stringify(profile));
+        } catch(e) {
+            console.error('Ошибка загрузки профиля с сервера:', e);
+        }
+    }
+
+    // ========== ЗАГРУЗКА АВАТАРА ==========
+document.getElementById('avatarUpload').addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Проверка типа файла
+    if (!file.type.startsWith('image/')) {
+        showToast('❌ Выберите изображение', 'danger');
+        return;
+    }
+    
+    const formData = new FormData();
+    formData.append('avatar', file);
+    
+    try {
+        const response = await fetch('/api/avatar', {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${token}` },
+            body: formData
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+            // Обновляем аватар на странице
+            document.getElementById('avatar').src = data.avatarUrl + '?t=' + Date.now();
+            showToast('✅ Аватар обновлён!', 'success');
+            
+            // Обновляем в localStorage
+            const userData = JSON.parse(localStorage.getItem('user') || '{}');
+            userData.avatar = data.avatarUrl;
+            localStorage.setItem('user', JSON.stringify(userData));
+            
+            const profileData = JSON.parse(localStorage.getItem('profile') || '{}');
+            profileData.avatar = data.avatarUrl;
+            localStorage.setItem('profile', JSON.stringify(profileData));
+        } else {
+            showToast(data.message || '❌ Ошибка загрузки', 'danger');
+        }
+    } catch (error) {
+        console.error('Ошибка:', error);
+        showToast('❌ Ошибка соединения', 'danger');
+    }
+});
+    
+    function loadProfile() {
+        const avatar = profile.avatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + (user.name || 'default');
+        document.getElementById('avatar').src = avatar;
+        
+        const selectedCategories = profile.categories || [];
+        document.querySelectorAll('.category-badge').forEach(badge => {
+            const category = badge.getAttribute('data-category');
+            if (selectedCategories.includes(category)) badge.classList.add('selected');
+            badge.addEventListener('click', () => badge.classList.toggle('selected'));
+        });
+        
+        document.getElementById('fact1Text').innerText = profile.fact1 || 'Люблю активный отдых';
+        document.getElementById('fact2Text').innerText = profile.fact2 || 'Обожаю квесты';
+    }
+    
+    function showAvatarSelector() {
+        const selector = document.getElementById('avatarSelector');
+        selector.style.display = selector.style.display === 'none' ? 'flex' : 'none';
+    }
+    
+    function selectAvatar(url) {
+        document.getElementById('avatar').src = url;
+        document.getElementById('avatarSelector').style.display = 'none';
+    }
+    
+    function editFact(num) {
+        const currentText = document.getElementById(`fact${num}Text`).innerText;
+        const newFact = prompt(`Введите факт №${num}:`, currentText);
+        if (newFact && newFact.trim()) document.getElementById(`fact${num}Text`).innerText = newFact.trim();
+    }
+
+    function initDarkMode() {
+    const switchEl = document.getElementById('darkModeSwitchProfile');
+    const htmlEl = document.documentElement;
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark') {
+        htmlEl.setAttribute('data-bs-theme', 'dark');
+        if (switchEl) switchEl.checked = true;
+    } else {
+        htmlEl.setAttribute('data-bs-theme', 'light');
+        if (switchEl) switchEl.checked = false;
+    }
+    if (switchEl) {
+        switchEl.addEventListener('change', (e) => {
+            if (e.target.checked) {
+                htmlEl.setAttribute('data-bs-theme', 'dark');
+                localStorage.setItem('theme', 'dark');
+            } else {
+                htmlEl.setAttribute('data-bs-theme', 'light');
+                localStorage.setItem('theme', 'light');
+            }
+        });
+    }
+}
+initDarkMode();
+
+// ========== ТОСТЫ ==========
+function showToast(message, type = 'success') {
+    let container = document.getElementById('toastContainer');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'toastContainer';
+        container.className = 'position-fixed bottom-0 end-0 p-3';
+        container.style.zIndex = '1100';
+        document.body.appendChild(container);
+    }
+    const toast = document.createElement('div');
+    toast.className = `toast align-items-center text-white bg-${type === 'success' ? 'success' : 'danger'} border-0 mb-2`;
+    toast.setAttribute('role', 'alert');
+    toast.innerHTML = `
+        <div class="d-flex">
+            <div class="toast-body">${message}</div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+    `;
+    container.appendChild(toast);
+    const bsToast = new bootstrap.Toast(toast, { delay: 3000 });
+    bsToast.show();
+    toast.addEventListener('hidden.bs.toast', () => toast.remove());
+}
+    
+  // ========== СОХРАНЕНИЕ ПРОФИЛЯ ==========
+async function saveProfile(event) {
+    const categories = [];
+    document.querySelectorAll('.category-badge.selected').forEach(badge => {
+        categories.push(badge.getAttribute('data-category'));
+    });
+    
+    const fact1 = document.getElementById('fact1Text').innerText.trim();
+    const fact2 = document.getElementById('fact2Text').innerText.trim();
+    const avatar = document.getElementById('avatar').src
+        // убираем ?t=... кэш-буст из URL
+        .replace(/\?t=\d+$/, '')
+        // убираем абсолютный origin если это локальный /uploads/
+        .replace(window.location.origin, '');
+    
+    const updatedProfile = { avatar, categories, fact1, fact2 };
+    localStorage.setItem('profile', JSON.stringify(updatedProfile));
+    localStorage.setItem('userInterests', JSON.stringify(categories));
+    
+    const saveBtn = document.querySelector('.btn-save');
+    const originalText = saveBtn.innerHTML;
+    saveBtn.disabled = true;
+    saveBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Сохранение...';
+    
+    try {
+        // 1. Сохраняем интересы
+        const resInterests = await fetch('/api/auth/interests', {
+            method: 'PUT',
+            headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ interests: categories })
+        });
+
+        // 2. Сохраняем факты в поле bio как JSON
+        const resBio = await fetch('/api/user/profile', {
+            method: 'PUT',
+            headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ bio: JSON.stringify({ fact1, fact2 }) })
+        });
+
+        if (resInterests.ok) {
+            showToast('✅ Профиль сохранён!', 'success');
+        } else {
+            showToast('⚠️ Ошибка при сохранении интересов', 'danger');
+        }
+    } catch (error) { 
+        console.error('Ошибка:', error);
+        showToast('⚠️ Ошибка соединения с сервером', 'danger');
+    } finally {
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = originalText;
+    }
+}
+    
+    loadProfile();
+    loadProfileFromServer();
+
+    // РЕЙТИНГ И ОТЗЫВЫ
+    async function loadReviews() {
+        try {
+            const res = await fetch(`/api/reviews/user/${user.id}`, { headers: { 'Authorization': `Bearer ${token}` } });
+            if (res.ok) {
+                const data = await res.json();
+                document.getElementById('avgRatingValue').innerText = data.avgRating > 0 ? data.avgRating.toFixed(1) : '0.0';
+                
+                // Склонение слова "отзыв"
+                let countText = 'отзывов';
+                if (data.count % 10 === 1 && data.count % 100 !== 11) countText = 'отзыв';
+                else if ([2, 3, 4].includes(data.count % 10) && ![12, 13, 14].includes(data.count % 100)) countText = 'отзыва';
+                document.getElementById('reviewsCount').innerText = `${data.count} ${countText}`;
+                
+                const list = document.getElementById('reviewsList');
+                if (data.reviews && data.reviews.length > 0) {
+                    list.innerHTML = data.reviews.map(r => `
+                        <div class="d-flex gap-3 mb-3 pb-3 border-bottom">
+                            <img src="${r.fromUserAvatar || 'https://api.dicebear.com/7.x/avataaars/svg?seed='+r.fromUserName}" class="rounded-circle" width="40" height="40" style="object-fit:cover">
+                            <div>
+                                <div class="d-flex align-items-center gap-2">
+                                    <span class="fw-bold">${r.fromUserName}</span>
+                                    <span class="badge bg-warning text-dark"><i class="bi bi-star-fill"></i> ${r.rating}</span>
+                                    <span class="text-muted small">${new Date(r.createdAt).toLocaleDateString()}</span>
+                                </div>
+                                ${r.comment ? `<div class="mt-1 small">${r.comment}</div>` : ''}
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            }
+        } catch(e) {
+            console.error('Ошибка загрузки отзывов:', e);
+        }
+    }
+
+    loadReviews();
+</script>
+</body>
+</html>

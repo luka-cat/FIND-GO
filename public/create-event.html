@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="ru" data-bs-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Создать поход | Find&Go</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+            background: var(--bs-body-bg);
+            transition: background-color 0.3s ease;
+        }
+        
+        .navbar { 
+            background: var(--bs-tertiary-bg);
+            backdrop-filter: blur(20px);
+            padding: 12px 0; 
+        }
+        
+        .navbar-brand { 
+            font-weight: 700; 
+            font-size: 1.6rem; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text; 
+            background-clip: text; 
+            color: transparent; 
+        }
+        
+        .btn-logout { 
+            border: 1px solid var(--bs-border-color);
+            background: var(--bs-secondary-bg);
+            border-radius: 30px; 
+            padding: 6px 18px; 
+            transition: 0.2s; 
+            color: var(--bs-body-color);
+        }
+        
+        .btn-logout:hover { 
+            background: #fee2e2; 
+            border-color: #fecaca; 
+            color: #dc2626; 
+        }
+        
+        .form-card {
+            background: var(--bs-card-bg);
+            border-radius: 32px;
+            padding: 32px;
+            margin-top: 80px;
+            margin-bottom: 40px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+            border: 1px solid var(--bs-border-color);
+        }
+        
+        .form-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 8px;
+        }
+        
+        .form-subtitle {
+            color: var(--bs-secondary-color);
+            margin-bottom: 32px;
+        }
+        
+        .form-label {
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .form-label i {
+            color: #667eea;
+            font-size: 1.2rem;
+        }
+        
+        .form-control, .form-select {
+            background: var(--bs-body-bg);
+            border: 1px solid var(--bs-border-color);
+            border-radius: 16px;
+            padding: 12px 16px;
+            transition: all 0.2s;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .datetime-group {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        
+        .datetime-group .form-control {
+            flex: 1;
+        }
+        
+        .btn-gradient {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border: none;
+            border-radius: 50px;
+            padding: 14px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: all 0.3s;
+        }
+        
+        .btn-gradient:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+        }
+        
+        .btn-gradient:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .place-suggestion {
+            background: var(--bs-secondary-bg);
+            border-radius: 16px;
+            padding: 12px 16px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .place-suggestion:hover {
+            background: var(--bs-border-color);
+            transform: translateX(4px);
+        }
+        
+        .place-suggestion-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+        }
+        
+        .loading-spinner {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .spinner-border-sm {
+            width: 1rem;
+            height: 1rem;
+            border-width: 0.2em;
+        }
+
+        @keyframes spinner-border {
+            to { transform: rotate(360deg); }
+        }
+
+    .spinner-border {
+            display: inline-block;
+            animation: spinner-border 0.75s linear infinite;
+        }   
+        
+        /* Стили для спиннера */
+        .spinner-border-sm {
+            width: 1rem;
+            height: 1rem;
+            border-width: 0.2em;
+        }
+        
+        @keyframes spinner-border {
+            to { transform: rotate(360deg); }
+        }
+        
+        .spinner-border {
+            display: inline-block;
+            animation: spinner-border 0.75s linear infinite;
+        }
+        
+        @media (max-width: 600px) {
+            .form-card { padding: 24px; margin-top: 70px; }
+            .form-title { font-size: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg fixed-top">
+    <div class="container">
+        <a class="navbar-brand" href="/"><i class="bi bi-compass-fill"></i> Find&Go</a>
+        <div class="ms-auto d-flex align-items-center gap-2">
+            <div class="theme-switch me-2">
+                <i class="bi bi-moon-stars"></i>
+                <div class="form-check form-switch d-inline-block ms-1">
+                    <input class="form-check-input" type="checkbox" id="darkModeSwitchPage">
+                </div>
+            </div>
+            <span id="userName" class="fw-bold"></span>
+            <button id="logoutBtn" class="btn btn-logout">Выйти</button>
+        </div>
+    </div>
+</nav>
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-7">
+            <div class="form-card">
+                <div class="text-center">
+                    <h1 class="form-title"><i class="bi bi-plus-circle"></i> Создать поход</h1>
+                    <p class="form-subtitle">Найди компанию для совместного отдыха</p>
+                </div>
+                
+                <form id="createEventForm">
+                    <!-- Выбор места -->
+                    <div class="mb-4">
+                        <label class="form-label"><i class="bi bi-geo-alt-fill"></i> Куда пойдём?</label>
+                        <select id="placeId" class="form-select" required>
+                            <option value="">-- Выберите место --</option>
+                        </select>
+                        <div class="form-text text-muted small mt-1">Места загружаются из базы данных</div>
+                    </div>
+                    
+                    <!-- Дата и время -->
+                    <div class="mb-4">
+                        <label class="form-label"><i class="bi bi-calendar-event"></i> Когда идём?</label>
+                        <div class="datetime-group">
+                            <input type="date" id="eventDate" class="form-control" required>
+                            <input type="time" id="eventTime" class="form-control" required>
+                        </div>
+                        <div class="form-text text-muted small mt-1">Выберите удобный день и время</div>
+                    </div>
+                    
+                    <!-- Количество участников -->
+                    <div class="mb-4">
+                        <label class="form-label"><i class="bi bi-people-fill"></i> Сколько человек ищем?</label>
+                        <input type="number" id="maxParticipants" class="form-control" min="2" max="20" value="4" required>
+                        <div class="form-text text-muted small mt-1">Включая вас</div>
+                    </div>
+                    
+                    <!-- Описание -->
+                    <div class="mb-4">
+                        <label class="form-label"><i class="bi bi-chat-text-fill"></i> Описание (необязательно)</label>
+                        <textarea id="description" class="form-control" rows="3" placeholder="Напишите пару слов о себе или о том, кого ищете..."></textarea>
+                    </div>
+                    
+                    <!-- Кнопка отправки -->
+                    <button type="submit" class="btn btn-gradient w-100 text-white">
+                        <i class="bi bi-send-fill"></i> Создать поход
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Контейнер для тостов -->
+<div id="toastContainer" class="position-fixed bottom-0 end-0 p-3" style="z-index: 1100;"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // ========== АВТОРИЗАЦИЯ ==========
+    const token = localStorage.getItem('token');
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    if (!token) window.location.href = '/login.html';
+    
+    document.getElementById('userName').innerHTML = `<i class="bi bi-person-circle"></i> ${user.name || 'Пользователь'}`;
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        window.location.href = '/login.html';
+    });
+    
+    // ========== ТЁМНАЯ ТЕМА ==========
+    function initDarkMode() {
+        const switchEl = document.getElementById('darkModeSwitchPage');
+        const htmlEl = document.documentElement;
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark') {
+            htmlEl.setAttribute('data-bs-theme', 'dark');
+            if (switchEl) switchEl.checked = true;
+        } else {
+            htmlEl.setAttribute('data-bs-theme', 'light');
+            if (switchEl) switchEl.checked = false;
+        }
+        if (switchEl) {
+            switchEl.addEventListener('change', (e) => {
+                if (e.target.checked) {
+                    htmlEl.setAttribute('data-bs-theme', 'dark');
+                    localStorage.setItem('theme', 'dark');
+                } else {
+                    htmlEl.setAttribute('data-bs-theme', 'light');
+                    localStorage.setItem('theme', 'light');
+                }
+            });
+        }
+    }
+    initDarkMode();
+    
+    // ========== ТОСТЫ ==========
+    function showToast(message, type = 'success') {
+        const container = document.getElementById('toastContainer');
+        if (!container) {
+            console.warn('Контейнер для тостов не найден');
+            return;
+        }
+        const toast = document.createElement('div');
+        toast.className = `toast align-items-center text-white bg-${type === 'success' ? 'success' : 'danger'} border-0 mb-2`;
+        toast.setAttribute('role', 'alert');
+        toast.innerHTML = `
+            <div class="d-flex">
+                <div class="toast-body">${message}</div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        `;
+        container.appendChild(toast);
+        const bsToast = new bootstrap.Toast(toast, { delay: 3000 });
+        bsToast.show();
+        toast.addEventListener('hidden.bs.toast', () => toast.remove());
+    }
+    
+    // ========== ЗАГРУЗКА МЕСТ ==========
+    async function loadPlaces() {
+        const select = document.getElementById('placeId');
+        select.innerHTML = '<option value="">Загрузка мест...</option>';
+        
+        try {
+            const response = await fetch('/api/places', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            
+            if (!response.ok) throw new Error('Ошибка загрузки мест');
+            
+            const places = await response.json();
+            
+            if (places.length === 0) {
+                select.innerHTML = '<option value="">Нет доступных мест</option>';
+                return;
+            }
+            
+            select.innerHTML = '<option value="">-- Выберите место --</option>';
+            places.forEach(place => {
+                const option = document.createElement('option');
+                option.value = place.id;
+                option.textContent = place.name;
+                select.appendChild(option);
+            });
+            
+            // Если есть параметр place в URL, выбираем соответствующее место
+            const urlParams = new URLSearchParams(window.location.search);
+            const placeName = urlParams.get('place');
+            if (placeName) {
+                for (let i = 0; i < select.options.length; i++) {
+                    if (select.options[i].text === placeName) {
+                        select.selectedIndex = i;
+                        break;
+                    }
+                }
+            }
+            
+        } catch (error) {
+            console.error('Ошибка:', error);
+            select.innerHTML = '<option value="">Ошибка загрузки мест. Обновите страницу</option>';
+            showToast('Не удалось загрузить места', 'danger');
+        }
+    }
+    
+    // ========== УСТАНОВКА МИНИМАЛЬНОЙ ДАТЫ ==========
+    function setMinDate() {
+        const dateInput = document.getElementById('eventDate');
+        const today = new Date();
+        const yyyy = today.getFullYear();
+        const mm = String(today.getMonth() + 1).padStart(2, '0');
+        const dd = String(today.getDate()).padStart(2, '0');
+        dateInput.min = `${yyyy}-${mm}-${dd}`;
+        dateInput.value = `${yyyy}-${mm}-${dd}`;
+        
+        // Устанавливаем время по умолчанию (19:00)
+        const timeInput = document.getElementById('eventTime');
+        if (timeInput && !timeInput.value) {
+            timeInput.value = '19:00';
+        }
+    }
+    
+    // ========== СОЗДАНИЕ ПОХОДА (С ВАЛИДАЦИЕЙ И ТОСТАМИ) ==========
+    document.getElementById('createEventForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const placeId = document.getElementById('placeId').value;
+        const eventDate = document.getElementById('eventDate').value;
+        const eventTime = document.getElementById('eventTime').value;
+        const maxParticipants = document.getElementById('maxParticipants').value;
+        const description = document.getElementById('description').value;
+        
+        // ========== ВАЛИДАЦИЯ ==========
+        if (!placeId) {
+            showToast('⚠️ Выберите место', 'danger');
+            return;
+        }
+        
+        if (!eventDate || !eventTime) {
+            showToast('⚠️ Выберите дату и время', 'danger');
+            return;
+        }
+        
+        // Проверка, что дата не в прошлом
+        const selectedDateTime = new Date(`${eventDate}T${eventTime}`);
+        if (selectedDateTime < new Date()) {
+            showToast('⚠️ Дата и время не могут быть в прошлом', 'danger');
+            return;
+        }
+        
+        // Объединяем дату и время
+        const datetime = `${eventDate}T${eventTime}:00`;
+        
+        const submitBtn = document.querySelector('.btn-gradient');
+        const originalText = submitBtn.innerHTML;
+        
+        // ========== ПОКАЗЫВАЕМ ЗАГРУЗКУ ==========
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Создание...';
+        
+        try {
+            const response = await fetch('/api/events', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    placeId: parseInt(placeId),
+                    datetime: datetime,
+                    maxParticipants: parseInt(maxParticipants),
+                    description: description
+                })
+            });
+            
+            if (response.ok) {
+                showToast('🎉 Поход успешно создан!', 'success');
+                setTimeout(() => {
+                    window.location.href = '/';
+                }, 1500);
+            } else {
+                const error = await response.json();
+                showToast(error.message || '❌ Ошибка при создании похода', 'danger');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+            }
+        } catch (error) {
+            console.error('Ошибка:', error);
+            showToast('❌ Ошибка соединения. Попробуйте позже.', 'danger');
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalText;
+        }
+    });
+    
+    // ========== ЗАПУСК ==========
+    setMinDate();
+    loadPlaces();
+</script>
+</body>
+</html>

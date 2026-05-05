@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="ru" data-bs-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Главные вопросы | Find&Go</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <style>
+        body {
+            background: var(--bs-body-bg);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        
+        .navbar {
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(20px);
+            padding: 12px 0;
+        }
+        
+        [data-bs-theme="dark"] .navbar {
+            background: rgba(33,37,41,0.95);
+        }
+        
+        .faq-header {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            margin-top: 70px;
+            margin-bottom: 40px;
+            border-radius: 32px;
+            padding: 48px 24px;
+            color: white;
+            text-align: center;
+        }
+        
+        .faq-item {
+            background: var(--bs-card-bg);
+            border-radius: 20px;
+            margin-bottom: 16px;
+            border: 1px solid var(--bs-border-color);
+            overflow: hidden;
+        }
+        
+        .faq-question {
+            padding: 20px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: 0.2s;
+        }
+        
+        .faq-question:hover {
+            background: var(--bs-secondary-bg);
+        }
+        
+        .faq-answer {
+            padding: 0 20px 20px 20px;
+            color: var(--bs-secondary-color);
+            line-height: 1.6;
+            border-top: 1px solid var(--bs-border-color);
+            display: none;
+        }
+        
+        .faq-answer.show {
+            display: block;
+        }
+        
+        .faq-icon {
+            transition: transform 0.3s;
+        }
+        
+        .faq-question.active .faq-icon {
+            transform: rotate(180deg);
+        }
+        
+        .category-tag {
+            background: var(--bs-secondary-bg);
+            border-radius: 30px;
+            padding: 4px 12px;
+            font-size: 0.75rem;
+            margin-left: 12px;
+        }
+        
+        .search-box {
+            position: relative;
+            margin-bottom: 30px;
+        }
+        
+        .search-box input {
+            background: var(--bs-card-bg);
+            border: 1px solid var(--bs-border-color);
+            border-radius: 50px;
+            padding: 12px 20px 12px 45px;
+            width: 100%;
+        }
+        
+        .search-box i {
+            position: absolute;
+            left: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--bs-secondary-color);
+        }
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg fixed-top">
+    <div class="container">
+        <a class="navbar-brand fw-bold" href="/"><i class="bi bi-compass-fill"></i> Find&Go</a>
+        <div class="ms-auto d-flex align-items-center gap-2">
+            <span id="userName" class="fw-bold"></span>
+            <button id="logoutBtn" class="btn btn-sm btn-outline-danger">Выйти</button>
+        </div>
+        <div class="theme-switch me-2">
+    <i class="bi bi-moon-stars"></i>
+    <div class="form-check form-switch d-inline-block ms-1">
+        <input class="form-check-input" type="checkbox" id="darkModeSwitchPage">
+    </div>
+</div>
+    </div>
+</nav>
+
+<div class="container">
+    <div class="faq-header">
+        <h1 class="display-5"><i class="bi bi-question-circle"></i> Главные вопросы</h1>
+        <p class="lead">Всё, что нужно знать о Find&Go</p>
+    </div>
+    
+    <div class="search-box">
+        <i class="bi bi-search"></i>
+        <input type="text" id="searchInput" placeholder="Поиск по вопросам...">
+    </div>
+    
+    <div id="faqContainer"></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // ========== АВТОРИЗАЦИЯ ==========
+    const token = localStorage.getItem('token');
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    if (!token) window.location.href = '/login.html';
+    
+    document.getElementById('userName').innerHTML = `<i class="bi bi-person-circle"></i> ${user.name || 'Пользователь'}`;
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        window.location.href = '/login.html';
+    });
+    
+    // ========== ДАННЫЕ FAQ ==========
+    const faqData = [
+        {
+            category: "Походы",
+            question: "Как создать поход?",
+            answer: "Нажми на кнопку «Создать компанию» на главной странице или выбери «Создать поход» в боковом меню. Затем выбери место, дату и время, укажи количество участников и описание. После создания поход появится в ленте активных походов."
+        },
+        {
+            category: "Походы",
+            question: "Как присоединиться к походу?",
+            answer: "На главной странице в разделе «Активные походы» нажми кнопку «Присоединиться» рядом с интересующим тебя походом. После подтверждения ты сможешь общаться с участниками в чате."
+        },
+        {
+            category: "Походы",
+            question: "Можно ли отменить созданный поход?",
+            answer: "Да, в карточке своего похода есть кнопка «Отменить». После отмены всем участникам придёт уведомление."
+        },
+        {
+            category: "Профиль",
+            question: "Как изменить аватарку?",
+            answer: "Зайди в профиль, нажми на аватарку или кнопку «Сменить аватар». Ты можешь выбрать из предложенных вариантов или загрузить своё фото."
+        },
+        {
+            category: "Профиль",
+            question: "Зачем нужны категории интересов?",
+            answer: "Категории помогают находить людей с похожими увлечениями. Когда ты выбираешь интересы (квесты, кафе, прогулки и т.д.), платформа будет показывать тебе релевантные походы и людей."
+        },
+        {
+            category: "Профиль",
+            question: "Как добавить факты о себе?",
+            answer: "В профиле есть раздел «Факты обо мне». Нажми на кнопку с карандашом, чтобы добавить или изменить факт. Это помогает другим пользователям узнать тебя лучше."
+        },
+        {
+            category: "Безопасность",
+            question: "Безопасно ли встречаться с незнакомцами?",
+            answer: "Мы рекомендуем первые встречи проводить в людных местах (кафе, парки). В профиле пользователей отображается рейтинг и отзывы, что помогает оценить надёжность собеседника."
+        },
+        {
+            category: "Безопасность",
+            question: "Как пожаловаться на пользователя?",
+            answer: "На странице профиля пользователя есть кнопка «Пожаловаться». Мы рассмотрим жалобу в течение 24 часов и примем меры."
+        },
+        {
+            category: "Мероприятия",
+            question: "Что такое «Вдохновение»?",
+            answer: "Это раздел с красивыми и интересными местами Бишкека. Ты можешь листать карточки, выбирать понравившееся место и сразу создавать поход туда."
+        },
+        {
+            category: "Мероприятия",
+            question: "Можно ли добавить своё место?",
+            answer: "Скоро появится такая возможность! А пока ты можешь предложить место в разделе «О проекте»."
+        },
+        {
+            category: "Технические",
+            question: "Что делать, если не приходит уведомление?",
+            answer: "Проверь настройки уведомлений в браузере. Также уведомления дублируются в самом приложении в разделе «Уведомления»."
+        },
+        {
+            category: "Технические",
+            question: "Как сменить язык интерфейса?",
+            answer: "Открой боковое меню (иконка ☰) и выбери язык: Русский или Кыргызча. Выбор сохранится автоматически."
+        }
+    ];
+    
+    let currentFilter = '';
+    
+    function renderFaq(filter = '') {
+        const container = document.getElementById('faqContainer');
+        const filtered = faqData.filter(item => 
+            item.question.toLowerCase().includes(filter.toLowerCase()) ||
+            item.answer.toLowerCase().includes(filter.toLowerCase()) ||
+            item.category.toLowerCase().includes(filter.toLowerCase())
+        );
+        
+        // Группируем по категориям
+        const grouped = {};
+        filtered.forEach(item => {
+            if (!grouped[item.category]) grouped[item.category] = [];
+            grouped[item.category].push(item);
+        });
+        
+        if (filtered.length === 0) {
+            container.innerHTML = `
+                <div class="text-center py-5">
+                    <i class="bi bi-emoji-frown fs-1"></i>
+                    <p class="mt-3">Ничего не найдено. Попробуйте другой запрос.</p>
+                </div>
+            `;
+            return;
+        }
+        
+        let html = '';
+        for (const [category, items] of Object.entries(grouped)) {
+            html += `
+                <div class="mb-4">
+                    <h4 class="mb-3"><span class="badge bg-primary">${category}</span></h4>
+                    ${items.map((item, idx) => `
+                        <div class="faq-item" data-question="${item.question.toLowerCase()}">
+                            <div class="faq-question" onclick="toggleAnswer(this)">
+                                <span>${item.question}</span>
+                                <i class="bi bi-chevron-down faq-icon"></i>
+                            </div>
+                            <div class="faq-answer">
+                                ${item.answer}
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+        container.innerHTML = html;
+    }
+
+    function initDarkMode() {
+    const switchEl = document.getElementById('darkModeSwitchProfile');
+    const htmlEl = document.documentElement;
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark') {
+        htmlEl.setAttribute('data-bs-theme', 'dark');
+        if (switchEl) switchEl.checked = true;
+    } else {
+        htmlEl.setAttribute('data-bs-theme', 'light');
+        if (switchEl) switchEl.checked = false;
+    }
+    if (switchEl) {
+        switchEl.addEventListener('change', (e) => {
+            if (e.target.checked) {
+                htmlEl.setAttribute('data-bs-theme', 'dark');
+                localStorage.setItem('theme', 'dark');
+            } else {
+                htmlEl.setAttribute('data-bs-theme', 'light');
+                localStorage.setItem('theme', 'light');
+            }
+        });
+    }
+}
+initDarkMode();
+    
+    function toggleAnswer(element) {
+        const answer = element.nextElementSibling;
+        const isActive = element.classList.contains('active');
+        
+        // Закрываем все открытые
+        document.querySelectorAll('.faq-question').forEach(q => {
+            q.classList.remove('active');
+            q.nextElementSibling.classList.remove('show');
+        });
+        
+        if (!isActive) {
+            element.classList.add('active');
+            answer.classList.add('show');
+        }
+    }
+    
+    // Поиск
+    document.getElementById('searchInput').addEventListener('input', (e) => {
+        renderFaq(e.target.value);
+    });
+    
+    renderFaq();
+</script>
+</body>
+</html>
